@@ -72,3 +72,17 @@ Port 8105 digunakan clone Anata. Sesuaikan APP_URL dan port saat menjalankan clo
 Tes menggunakan SQLite :memory:, mail array/fake, queue sync dan session array sesuai phpunit.xml. Jangan menjalankan tes menggunakan database referensi. Pada tahap ini belum ada aset frontend baru; npm run build diperlukan ketika aset diubah pada tahap layout.
 
 Branch anggota: aura, aldi, dewanti, wisnu, anata. Branch integrasi: main. Integrasi dilakukan melalui folder Aura setelah pengujian. Waktu metadata Git untuk latihan yang disesuaikan dibedakan dari waktu pengerjaan dan push aktual.
+
+## SCRUM-71: layout dan navigasi
+
+Jalankan npm ci (atau npm install pada checkout pertama sebelum lockfile tersedia), lalu npm run build. Jalankan clone Aldi pada port 8102:
+
+```powershell
+php artisan serve --host=127.0.0.1 --port=8102
+```
+
+Buka http://127.0.0.1:8102/preview untuk memilih tampilan Pelamar, Admin, Badan Sertifikasi, autentikasi atau komponen UI. Semua menu workspace masih placeholder; tidak menampilkan data akun. Preview hanya tersedia pada APP_ENV=local atau testing dan mengembalikan 404 di production. Form autentikasi preview dinonaktifkan dan tidak menerima pengiriman kredensial.
+
+Layout menggunakan warna hijau, sidebar desktop, menu seluler yang dapat dibuka dengan keyboard tanpa JavaScript, header, footer, tombol kembali sesuai konteks dan tautan lewati ke konten. Contoh komponen mencakup pesan berhasil/gagal, validasi form, checkbox dan tabel yang dapat digeser di layar sempit. Font sistem dan ikon SVG lokal tidak memerlukan layanan eksternal.
+
+Pemeriksaan manual: buka setiap peran, klik seluruh menu dan Kembali, periksa penanda menu aktif; ulangi pada lebar 390px dan 768px. Pada HP, buka Menu navigasi untuk memilih halaman. Pada /preview/komponen, hanya area tabel yang boleh bergeser horizontal, bukan seluruh halaman. Periksa juga ketiga tampilan autentikasi. Fitur login dan pengelolaan data belum diaktifkan pada tahap ini.
