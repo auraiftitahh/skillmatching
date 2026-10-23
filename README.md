@@ -1,58 +1,74 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Skill Matching
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi Skill Matching Kelompok 7 menggunakan Laravel 13, PHP 8.3, dan Blade.
 
-## About Laravel
+## Prasyarat dan instalasi
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+PHP 8.3+, Composer 2, Node.js yang mendukung Vite 8 (20.19+ atau 22.12+) dan npm. Aktifkan PDO SQLite untuk pengujian.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```powershell
+composer install
+Copy-Item .env.example .env
+php artisan key:generate
+npm install
+npm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Jangan menimpa .env yang sudah tersedia. Setiap clone menggunakan APP_KEY, database, APP_URL dan SESSION_COOKIE berbeda. File .env, vendor, node_modules dan database lokal tidak masuk Git.
 
-## Contributing
+## SCRUM-70: akun dan lembaga
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Role akun adalah pelamar, admin dan sertifikasi. Akun baru secara default aktif, berperan pelamar dan belum terverifikasi email. Lembaga memiliki satu profil dengan status pending, active, rejected atau disabled. Status persetujuan lembaga terpisah dari email_verified_at dan is_active pada akun.
 
-## Code of Conduct
+Migrasi menambah kolom pada tabel users yang sudah ada, bukan membuat ulang tabel atau menghapus data. Fitur halaman registrasi, login, pembatasan akses dan persetujuan Admin dikerjakan pada tiket berikutnya; halaman awal masih bawaan Laravel.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Menyiapkan data lokal
 
-## Security Vulnerabilities
+Pastikan DB_DATABASE menunjuk database khusus clone ini, bukan database project referensi. Untuk SQLite, buat file database terlebih dahulu jika belum tersedia. Isi nilai berikut hanya dalam .env lokal:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```dotenv
+OWNER_EMAIL=admin@skillmatching.local
+OWNER_PASSWORD=
+DEMO_SEED=true
+DEMO_PASSWORD=
+ALLOW_DEMO_IN_PRODUCTION=false
+```
 
-## License
+Isi kedua password dengan nilai minimal 12 karakter. Tidak ada password bawaan di source. OWNER_PASSWORD dibutuhkan ketika Admin belum ada. Jika DEMO_SEED=false, seeder hanya menyiapkan Admin. Di production, akun contoh membutuhkan DEMO_SEED=true sekaligus ALLOW_DEMO_IN_PRODUCTION=true.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Setelah memastikan target database benar, jalankan secara manual:
+
+```powershell
+php artisan config:clear
+php artisan migrate --seed
+php artisan migrate:status
+```
+
+Tidak perlu migrate:fresh. Seeder dapat diulang dengan php artisan db:seed tanpa mereset password, nama, status atau data akun yang sudah tersedia. Seeder menolak konflik role pada alamat Admin/lembaga contoh dan tidak mengirim email.
+
+| Akun contoh | Role | Status awal |
+| --- | --- | --- |
+| Nilai OWNER_EMAIL | Admin | Aktif, email terverifikasi |
+| baru@example.test | Pelamar | Aktif, email terverifikasi |
+| belum.verifikasi@example.test | Pelamar | Aktif, email belum terverifikasi |
+| nonaktif@example.test | Pelamar | Nonaktif, email terverifikasi |
+| kontak@logistiknusantara.id | Badan Sertifikasi | Lembaga aktif, email terverifikasi |
+| lembaga.pending@example.test | Badan Sertifikasi | Menunggu persetujuan, email terverifikasi |
+| lembaga.rejected@example.test | Badan Sertifikasi | Ditolak, email terverifikasi |
+| lembaga.disabled@example.test | Badan Sertifikasi | Lembaga nonaktif, email terverifikasi |
+| lembaga.unverified@example.test | Badan Sertifikasi | Lembaga disetujui, email belum terverifikasi |
+
+Semua akun contoh selain Admin menggunakan DEMO_PASSWORD. Alamat contoh bukan inbox pengujian SMTP; gunakan alamat nyata milik penguji ketika menguji pengiriman email pada tahap autentikasi.
+
+## Pengujian dan menjalankan aplikasi
+
+```powershell
+php artisan test --compact
+php artisan serve --host=127.0.0.1 --port=8105
+```
+
+Port 8105 digunakan clone Anata. Sesuaikan APP_URL dan port saat menjalankan clone lain. Untuk menampilkan halaman awal tanpa migrasi, gunakan SESSION_DRIVER=file dan CACHE_STORE=file dalam .env lokal.
+
+Tes menggunakan SQLite :memory:, mail array/fake, queue sync dan session array sesuai phpunit.xml. Jangan menjalankan tes menggunakan database referensi. Pada tahap ini belum ada aset frontend baru; npm run build diperlukan ketika aset diubah pada tahap layout.
+
+Branch anggota: aura, aldi, dewanti, wisnu, anata. Branch integrasi: main. Integrasi dilakukan melalui folder Aura setelah pengujian. Waktu metadata Git untuk latihan yang disesuaikan dibedakan dari waktu pengerjaan dan push aktual.
