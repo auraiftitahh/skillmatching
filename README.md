@@ -86,3 +86,13 @@ Buka http://127.0.0.1:8102/preview untuk memilih tampilan Pelamar, Admin, Badan 
 Layout menggunakan warna hijau, sidebar desktop, menu seluler yang dapat dibuka dengan keyboard tanpa JavaScript, header, footer, tombol kembali sesuai konteks dan tautan lewati ke konten. Contoh komponen mencakup pesan berhasil/gagal, validasi form, checkbox dan tabel yang dapat digeser di layar sempit. Font sistem dan ikon SVG lokal tidak memerlukan layanan eksternal.
 
 Pemeriksaan manual: buka setiap peran, klik seluruh menu dan Kembali, periksa penanda menu aktif; ulangi pada lebar 390px dan 768px. Pada HP, buka Menu navigasi untuk memilih halaman. Pada /preview/komponen, hanya area tabel yang boleh bergeser horizontal, bukan seluruh halaman. Periksa juga ketiga tampilan autentikasi. Fitur login dan pengelolaan data belum diaktifkan pada tahap ini.
+
+## SCRUM-63: registrasi dan verifikasi email
+
+Buka /register untuk Pelamar atau /register?role=sertifikasi untuk lembaga. Field lembaga hanya terlihat dan aktif ketika jenis akun Badan Sertifikasi dipilih. Admin tidak dapat didaftarkan melalui registrasi publik. Password minimal 12 karakter, harus dikonfirmasi, dan tidak dikembalikan ke form saat validasi gagal.
+
+Akun baru belum terverifikasi; lembaga baru berstatus pending. Registrasi tidak otomatis login. Buka tautan email untuk mengonfirmasi email saja; persetujuan lembaga tetap terpisah. Tautan ditandatangani dan berlaku 60 menit. /verification-notice menyediakan kirim ulang dengan respons umum serta batas per IP dan jeda 60 detik per email. Kegagalan pengiriman email tidak menghapus akun yang sudah dibuat.
+
+Pada konfigurasi lokal MAIL_MAILER=log, email disimpan ke storage/logs/laravel.log, bukan dikirim ke inbox. Jangan screenshot atau membagikan tautan verifikasi yang masih aktif. Pengujian SMTP nyata memerlukan instruksi terpisah; tes otomatis memakai notifikasi palsu. Login diimplementasikan pada SCRUM-61.
+
+Tidak ada migrasi baru untuk SCRUM-63. Gunakan database lokal yang sudah dimigrasikan pada SCRUM-70. Di clone Anata jalankan npm ci, npm run build dan php artisan serve --host=127.0.0.1 --port=8105. Gunakan email unik saat mencoba registrasi dan jangan menjalankan migrate:fresh terhadap data yang masih dibutuhkan.
