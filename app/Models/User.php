@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\VerifyAccountEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -36,6 +37,11 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyAccountEmail);
     }
 
     public function certificationBody(): HasOne

@@ -116,3 +116,13 @@ tbody th { font-weight:600; }
 @media(max-width:800px) { .app-shell { grid-template-columns:minmax(0,1fr); } .sidebar { display:none; } .topbar { padding:16px 20px; min-height:auto; } .mobile-navigation { display:block; width:100%; border-top:1px solid var(--line); padding-top:10px; margin-top:4px; } .mobile-navigation summary { display:flex; align-items:center; gap:9px; cursor:pointer; min-height:42px; color:var(--green); font-weight:650; font-size:14px; list-style:none; } .mobile-navigation summary::-webkit-details-marker { display:none; } .mobile-navigation .navigation { margin-top:10px; } .mobile-preview-link { display:inline-block; padding:12px 14px; font-size:14px; } .main-content { padding:26px 20px; } .app-footer { margin:0 20px; } .role-grid { grid-template-columns:1fr; } .role-card { padding:24px; } .role-card-icon { margin-bottom:18px; } .auth-grid { grid-template-columns:1fr; max-width:520px; } .auth-story { display:none; } .auth-page { padding:24px 20px 0; } .auth-header { max-width:520px; } .component-grid { grid-template-columns:1fr; gap:0; } }
 @media(max-width:440px) { .topbar-title { max-width:45%; font-size:12px; } .role-chip { font-size:12px; gap:6px; } .avatar { width:28px; height:28px; } .main-content { padding:22px 16px; } .page-heading { align-items:flex-start; flex-direction:column; gap:12px; } .page-heading .button { min-height:40px; padding:8px 12px; } .empty-state { padding:34px 18px; min-height:340px; } .app-footer { margin:0 16px; flex-direction:column; gap:4px; } .auth-panel { padding:24px 20px; } .auth-panel h1 { font-size:23px; } .preview-hub { padding:28px 16px; } .hub-heading { margin-top:32px; } .hub-tools .actions { width:100%; } .hub-tools .button { flex:1; } .card { padding:20px; } .empty-state.card { padding:34px 18px; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; } }
+
+[hidden] { display:none!important; }
+.institution-fields { min-width:0; border:1px solid var(--line); border-radius:10px; padding:18px 16px 2px; margin:8px 0 20px; }
+.institution-fields legend { color:var(--green-dark); padding:0 6px; font-weight:650; font-size:13px; }
+.form-hint { font-size:12px; font-weight:400; color:var(--muted); margin:8px 0 16px; line-height:1.6; }
+.optional-label { font-size:12px; font-weight:400; color:var(--muted); }
+.password-field { position:relative; }
+.password-field input { padding-right:110px!important; }
+.password-toggle { position:absolute; top:50%; right:6px; transform:translateY(-50%); width:98px; min-height:36px; padding:6px; border:0; background:transparent; color:var(--green); font-size:12px; font-weight:650; cursor:pointer; border-radius:6px; }
+.auth-grid:has(.institution-fields:not([hidden])) { align-items:start; }
