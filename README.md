@@ -114,3 +114,13 @@ Dari /login pilih Lupa kata sandi atau buka /forgot-password. Respons permintaan
 Password baru minimal 12 karakter dan harus dikonfirmasi. Reset tidak otomatis login, tidak memverifikasi email, tidak mengaktifkan akun dan tidak mengubah persetujuan lembaga. Setelah reset, login dengan password baru; password lama ditolak. Remember token diganti. Ruang kerja menggunakan auth.session sehingga sesi lama yang sudah tercatat ditolak pada permintaan berikutnya setelah password berubah.
 
 Tidak ada migrasi baru. Di clone Dewanti, siapkan database lokal menggunakan migrasi/seeder SCRUM-70 bila belum tersedia. Jalankan npm run build dan php artisan serve --host=127.0.0.1 --port=8103. MAIL_MAILER=log menulis email pemulihan ke storage/logs/laravel.log; tidak mengirim ke inbox. Jangan membagikan atau menampilkan token/tautan pemulihan aktif dalam screenshot. Pengiriman SMTP nyata hanya dilakukan bila diinstruksikan. Gunakan akun khusus uji; password akun demo yang direset tidak dikembalikan oleh seeder berulang.
+
+## SCRUM-80: pengelolaan status akun
+
+Admin membuka /admin/akun melalui menu Pengelolaan Akun. Pencarian mencakup nama, email dan nama lembaga; filter peran, aktif/nonaktif dan verifikasi email dapat digabungkan. Daftar dipaginasi 15 akun. Detail dan tombol kembali mempertahankan filter daftar. Karakter % dan _ pada pencarian diperlakukan sebagai teks biasa.
+
+Status akun non-Admin dapat diaktifkan/dinonaktifkan dengan alasan wajib 5–500 karakter. Status email, role, password dan persetujuan lembaga tidak diubah. Akun Admin, termasuk diri sendiri, hanya dapat dilihat dan tidak dapat diubah statusnya lewat halaman ini. Perubahan dari form yang status awalnya sudah tidak sesuai ditolak; permintaan berulang tidak menambah riwayat ganda.
+
+Status dan riwayat disimpan dalam satu transaksi. Riwayat khusus akun mencatat kondisi sebelum/sesudah, alasan, nama petugas dan waktu yang ditampilkan dalam WIB. Snapshot identitas tetap tersimpan bila akun dihapus dari database; tidak ada fitur hapus akun pada tahap ini. Histori aktivitas platform secara umum tetap di luar cakupan SCRUM-80.
+
+Ada satu migrasi baru untuk tabel account_status_changes. Pada clone Anata jalankan php artisan migrate (tanpa migrate:fresh) setelah memastikan database lokal benar. Tidak perlu mengulang seeder bila akun contoh sudah tersedia. Jalankan npm run build sebelum mencoba tampilan. Menonaktifkan akun mencabut akses sesi pada permintaan operasional berikutnya; mengaktifkan kembali akun lembaga tidak menyetujui lembaga. Persetujuan lembaga dikerjakan pada SCRUM-81.
