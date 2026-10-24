@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordRecoveryController;
 use App\Http\Controllers\Auth\RegistrationController;
@@ -34,6 +35,11 @@ Route::get('/email/verified', [EmailVerificationController::class, 'complete'])-
 
 Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('workspace.role:admin')->group(function () {
+        Route::get('/akun', [AccountController::class, 'index'])->name('accounts.index');
+        Route::get('/akun/{user}', [AccountController::class, 'show'])->whereNumber('user')->name('accounts.show');
+        Route::patch('/akun/{user}/status', [AccountController::class, 'updateStatus'])->whereNumber('user')->name('accounts.status');
+    });
     Route::get('/sertifikasi/menunggu-verifikasi', [WorkspaceController::class, 'institutionStatus'])->middleware('workspace.role:sertifikasi')->name('institution.status');
     Route::get('/{role}/{page?}', [WorkspaceController::class, 'show'])
         ->whereIn('role', ['pelamar', 'admin', 'sertifikasi'])
