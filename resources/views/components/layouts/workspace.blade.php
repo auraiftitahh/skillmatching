@@ -1,4 +1,4 @@
-@props(['pageTitle', 'roleLabel', 'navigation', 'homeUrl', 'backUrl' => null, 'preview' => false])
+@props(['pageTitle', 'roleLabel', 'navigation', 'homeUrl', 'backUrl' => null, 'preview' => false, 'userName' => null, 'logoutUrl' => null])
 <x-layouts.base :title="$pageTitle">
     <div class="app-shell">
         <aside class="sidebar" aria-label="Panel navigasi">
@@ -8,15 +8,19 @@
             @if ($preview)
                 <div class="sidebar-bottom"><span class="badge">Pratinjau lokal</span><a href="{{ route('preview.index') }}">Pilih tampilan lain</a></div>
             @endif
+            @if (! $preview && $logoutUrl)
+                <div class="sidebar-bottom"><strong class="account-name">{{ $userName }}</strong><form method="post" action="{{ $logoutUrl }}">@csrf<button type="submit" class="button button-outline full-width">Keluar dari akun</button></form></div>
+            @endif
         </aside>
         <div class="workspace">
             <header class="topbar">
                 <span class="topbar-title">Ruang {{ $roleLabel }}</span>
-                <span class="role-chip"><span class="avatar">{{ mb_substr($roleLabel, 0, 1) }}</span>{{ $roleLabel }}</span>
+                <span class="role-chip"><span class="avatar">{{ mb_substr($userName ?? $roleLabel, 0, 1) }}</span><span class="account-name">{{ $userName ?? $roleLabel }}</span></span>
                 <details class="mobile-navigation">
                     <summary><x-icon name="menu" /><span>Menu navigasi</span></summary>
                     <x-navigation :items="$navigation" label="Navigasi seluler" />
                     @if ($preview)<a class="mobile-preview-link" href="{{ route('preview.index') }}">Pilih tampilan lain</a>@endif
+                    @if (! $preview && $logoutUrl)<form method="post" action="{{ $logoutUrl }}" class="mobile-logout">@csrf<button type="submit" class="button button-outline full-width">Keluar dari akun</button></form>@endif
                 </details>
             </header>
             <main id="main-content" tabindex="-1" class="main-content">
