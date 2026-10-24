@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureAccountEligible;
 use App\Http\Middleware\EnsureInstitutionActive;
 use App\Http\Middleware\EnsureWorkspaceRole;
 use App\Support\AccountDestination;
+use Illuminate\Contracts\Session\Middleware\AuthenticatesSessions;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn (Request $request) => AccountDestination::forUser($request->user()));
+        $middleware->prependToPriorityList(
+            before: AuthenticatesSessions::class,
+            prepend: EnsureAccountEligible::class,
+        );
         $middleware->alias([
             'account.eligible' => EnsureAccountEligible::class,
             'workspace.role' => EnsureWorkspaceRole::class,

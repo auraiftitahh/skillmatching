@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Auth\PasswordRecoveryController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\LayoutPreviewController;
@@ -17,6 +18,10 @@ Route::prefix('preview')->name('preview.')->group(function () {
 });
 
 Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', [PasswordRecoveryController::class, 'requestForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordRecoveryController::class, 'sendLink'])->middleware('throttle:3,1')->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordRecoveryController::class, 'resetForm'])->middleware('throttle:20,1')->name('password.reset');
+    Route::post('/reset-password', [PasswordRecoveryController::class, 'reset'])->middleware('throttle:10,1')->name('password.update');
     Route::get('/login', [SessionController::class, 'create'])->name('login');
     Route::post('/login', [SessionController::class, 'store'])->middleware('throttle:20,1')->name('login.store');
     Route::get('/register', [RegistrationController::class, 'create'])->name('register');
@@ -28,7 +33,7 @@ Route::get('/verify-email/{id}/{hash}', [EmailVerificationController::class, 've
 Route::get('/email/verified', [EmailVerificationController::class, 'complete'])->name('verification.complete');
 
 Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
-Route::middleware(['auth', 'account.eligible'])->group(function () {
+Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function () {
     Route::get('/sertifikasi/menunggu-verifikasi', [WorkspaceController::class, 'institutionStatus'])->middleware('workspace.role:sertifikasi')->name('institution.status');
     Route::get('/{role}/{page?}', [WorkspaceController::class, 'show'])
         ->whereIn('role', ['pelamar', 'admin', 'sertifikasi'])

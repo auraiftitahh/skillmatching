@@ -11,5 +11,5 @@
         <button class="button button-primary full-width" type="submit" data-pending-label="Memeriksa akun…">Masuk</button>
         <p class="form-hint" aria-live="polite" data-pending-status></p>
     </form>
-    <div class="auth-links"><p>Belum punya akun? <a href="{{ route('register') }}">Buat akun</a></p><p><a href="{{ route('verification.notice') }}">Kirim ulang tautan verifikasi email</a></p></div>
+    <div class="auth-links"><p><a href="{{ route('password.request') }}">Lupa kata sandi?</a></p><p>Belum punya akun? <a href="{{ route('register') }}">Buat akun</a></p><p><a href="{{ route('verification.notice') }}">Kirim ulang tautan verifikasi email</a></p></div>
 </x-layouts.auth>

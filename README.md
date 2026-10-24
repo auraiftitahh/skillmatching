@@ -106,3 +106,11 @@ Navigasi operasional tetap berupa placeholder sesuai cakupan tahap ini. Semua UR
 Login dibatasi lima kesalahan per kombinasi email/IP selama 60 detik, serta batas permintaan per IP. Password salah dan email tidak dikenal memberi pesan yang sama. Login memperbarui ID sesi dan tidak memakai URL tujuan dari luar. Logout hanya menerima POST ber-CSRF serta menghapus sesi dan memperbarui token CSRF.
 
 Tidak ada migrasi baru. Jika database clone Aura masih kosong, pastikan targetnya database Aura, isi konfigurasi seed lokal, lalu jalankan php artisan migrate --seed. Gunakan akun contoh SCRUM-70 untuk mencoba login. Form lupa password ditambahkan pada SCRUM-62; halaman status lembaga akan dilengkapi pada SCRUM-82. Jalankan npm ci, npm run build dan php artisan serve --host=127.0.0.1 --port=8101 untuk demo Aura.
+
+## SCRUM-62: pemulihan kata sandi
+
+Dari /login pilih Lupa kata sandi atau buka /forgot-password. Respons permintaan tidak membedakan email terdaftar dan tidak terdaftar. Permintaan dibatasi per IP dan broker membatasi pengiriman ulang per akun selama 60 detik. Token disimpan dalam bentuk hash di password_reset_tokens, berlaku 60 menit, dan dihapus setelah reset berhasil. Tautan yang tidak valid, kedaluwarsa atau pernah digunakan menyediakan tombol meminta tautan baru.
+
+Password baru minimal 12 karakter dan harus dikonfirmasi. Reset tidak otomatis login, tidak memverifikasi email, tidak mengaktifkan akun dan tidak mengubah persetujuan lembaga. Setelah reset, login dengan password baru; password lama ditolak. Remember token diganti. Ruang kerja menggunakan auth.session sehingga sesi lama yang sudah tercatat ditolak pada permintaan berikutnya setelah password berubah.
+
+Tidak ada migrasi baru. Di clone Dewanti, siapkan database lokal menggunakan migrasi/seeder SCRUM-70 bila belum tersedia. Jalankan npm run build dan php artisan serve --host=127.0.0.1 --port=8103. MAIL_MAILER=log menulis email pemulihan ke storage/logs/laravel.log; tidak mengirim ke inbox. Jangan membagikan atau menampilkan token/tautan pemulihan aktif dalam screenshot. Pengiriman SMTP nyata hanya dilakukan bila diinstruksikan. Gunakan akun khusus uji; password akun demo yang direset tidak dikembalikan oleh seeder berulang.
