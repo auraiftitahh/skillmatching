@@ -96,3 +96,13 @@ Akun baru belum terverifikasi; lembaga baru berstatus pending. Registrasi tidak 
 Pada konfigurasi lokal MAIL_MAILER=log, email disimpan ke storage/logs/laravel.log, bukan dikirim ke inbox. Jangan screenshot atau membagikan tautan verifikasi yang masih aktif. Pengujian SMTP nyata memerlukan instruksi terpisah; tes otomatis memakai notifikasi palsu. Login diimplementasikan pada SCRUM-61.
 
 Tidak ada migrasi baru untuk SCRUM-63. Gunakan database lokal yang sudah dimigrasikan pada SCRUM-70. Di clone Anata jalankan npm ci, npm run build dan php artisan serve --host=127.0.0.1 --port=8105. Gunakan email unik saat mencoba registrasi dan jangan menjalankan migrate:fresh terhadap data yang masih dibutuhkan.
+
+## SCRUM-61: login, logout dan akses peran
+
+Halaman awal sekarang mengarah ke /login. Akun aktif dan terverifikasi masuk ke /pelamar/dashboard, /admin/dashboard atau /sertifikasi/dashboard. Akun lembaga pending, ditolak, nonaktif atau belum memiliki profil hanya dapat membuka /sertifikasi/menunggu-verifikasi dan logout. Email belum terverifikasi mengarah ke /verification-notice tanpa sesi login. Akun pengguna nonaktif tidak dapat masuk.
+
+Navigasi operasional tetap berupa placeholder sesuai cakupan tahap ini. Semua URL ruang kerja memeriksa sesi, kelayakan akun, kesesuaian role dan status lembaga di server. Penggantian status akun atau lembaga berlaku pada permintaan berikutnya, termasuk sesi yang sudah login. Preview lokal tetap terpisah dari ruang operasional dan tidak menampilkan data akun.
+
+Login dibatasi lima kesalahan per kombinasi email/IP selama 60 detik, serta batas permintaan per IP. Password salah dan email tidak dikenal memberi pesan yang sama. Login memperbarui ID sesi dan tidak memakai URL tujuan dari luar. Logout hanya menerima POST ber-CSRF serta menghapus sesi dan memperbarui token CSRF.
+
+Tidak ada migrasi baru. Jika database clone Aura masih kosong, pastikan targetnya database Aura, isi konfigurasi seed lokal, lalu jalankan php artisan migrate --seed. Gunakan akun contoh SCRUM-70 untuk mencoba login. Form lupa password ditambahkan pada SCRUM-62; halaman status lembaga akan dilengkapi pada SCRUM-82. Jalankan npm ci, npm run build dan php artisan serve --host=127.0.0.1 --port=8101 untuk demo Aura.

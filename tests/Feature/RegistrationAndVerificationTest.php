@@ -218,7 +218,7 @@ class RegistrationAndVerificationTest extends TestCase
 
     public function test_signed_in_users_cannot_register_additional_accounts(): void
     {
-        $this->actingAs(User::factory()->create())->post('/register', $this->payload())->assertRedirect('/');
+        $this->actingAs(User::factory()->create())->post('/register', $this->payload())->assertRedirect(route('workspace', ['role' => 'pelamar', 'page' => 'dashboard']));
         $this->assertDatabaseCount('users', 1);
         Notification::assertNothingSent();
     }

@@ -2,45 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\WorkspaceNavigation;
 use Illuminate\Contracts\View\View;
 
 class LayoutPreviewController extends Controller
 {
-    private const PAGES = [
-        'pelamar' => [
-            'dashboard' => ['Dashboard Pelamar', 'home'],
-            'profil' => ['Profil Saya', 'user'],
-            'riwayat' => ['Riwayat Pengalaman', 'history'],
-            'skill' => ['Keterampilan Saya', 'spark'],
-            'lowongan' => ['Posisi Tujuan', 'briefcase'],
-            'pelatihan' => ['Pelatihan', 'book'],
-            'rencana-belajar' => ['Rencana Belajar', 'list'],
-            'simulasi' => ['Simulasi Kecocokan', 'chart'],
-            'bukti-kompetensi' => ['Bukti Kompetensi', 'badge'],
-            'pengaturan' => ['Pengaturan', 'settings'],
-        ],
-        'admin' => [
-            'dashboard' => ['Dashboard Admin', 'home'],
-            'akun' => ['Pengelolaan Akun', 'user'],
-            'persetujuan-lembaga' => ['Persetujuan Lembaga', 'badge'],
-            'pengajuan-pelatihan' => ['Pengajuan Pelatihan', 'book'],
-            'skill' => ['Katalog Keterampilan', 'spark'],
-            'lowongan' => ['Lowongan Kerja', 'briefcase'],
-            'bobot' => ['Pengaturan Bobot', 'settings'],
-            'aktivitas' => ['Riwayat Aktivitas', 'history'],
-            'laporan' => ['Laporan', 'chart'],
-        ],
-        'sertifikasi' => [
-            'dashboard' => ['Dashboard Badan Sertifikasi', 'home'],
-            'pengajuan' => ['Pengajuan Pelatihan', 'book'],
-            'peserta' => ['Peserta Pelatihan', 'user'],
-            'kelulusan' => ['Konfirmasi Kelulusan', 'badge'],
-            'bukti-eksternal' => ['Bukti Eksternal', 'list'],
-            'riwayat' => ['Riwayat Layanan', 'history'],
-            'akun' => ['Profil Lembaga', 'settings'],
-        ],
-    ];
-
     public function index(): View
     {
         $this->ensureLocalPreview();
@@ -51,26 +17,13 @@ class LayoutPreviewController extends Controller
     public function workspace(string $role, string $page = 'dashboard'): View
     {
         $this->ensureLocalPreview();
-        abort_unless(isset(self::PAGES[$role][$page]), 404);
-
-        $roleLabel = match ($role) {
-            'pelamar' => 'Pelamar',
-            'admin' => 'Admin',
-            'sertifikasi' => 'Badan Sertifikasi',
-        };
-        $navigation = [];
-        foreach (self::PAGES[$role] as $slug => [$label, $icon]) {
-            $navigation[] = [
-                'label' => $label,
-                'icon' => $icon,
-                'url' => route('preview.workspace', ['role' => $role, 'page' => $slug]),
-                'active' => $page === $slug,
-            ];
-        }
+        abort_unless(isset(WorkspaceNavigation::PAGES[$role][$page]), 404);
+        $roleLabel = WorkspaceNavigation::label($role);
+        $navigation = WorkspaceNavigation::items($role, $page, true);
 
         return view('preview.workspace', [
             'roleLabel' => $roleLabel,
-            'pageTitle' => self::PAGES[$role][$page][0],
+            'pageTitle' => WorkspaceNavigation::PAGES[$role][$page][0],
             'navigation' => $navigation,
             'homeUrl' => route('preview.workspace', ['role' => $role, 'page' => 'dashboard']),
         ]);

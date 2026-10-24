@@ -26,6 +26,6 @@
         <button class="button button-primary full-width" type="submit" data-pending-label="Membuat akun…">Buat akun</button>
         <p class="form-hint" aria-live="polite" data-pending-status></p>
     </form>
-    <div class="auth-links"><a href="{{ route('verification.notice') }}">Sudah mendaftar? Kirim ulang tautan verifikasi</a></div>
+    <div class="auth-links"><p>Sudah punya akun? <a href="{{ route('login') }}">Masuk</a></p><a href="{{ route('verification.notice') }}">Sudah mendaftar? Kirim ulang tautan verifikasi</a></div>
     <noscript><p class="form-hint">Untuk mendaftar sebagai lembaga tanpa JavaScript, <a href="{{ route('register', ['role' => 'sertifikasi']) }}">buka form Badan Sertifikasi</a>.</p></noscript>
 </x-layouts.auth>

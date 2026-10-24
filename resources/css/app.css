@@ -126,3 +126,9 @@ tbody th { font-weight:600; }
 .password-field input { padding-right:110px!important; }
 .password-toggle { position:absolute; top:50%; right:6px; transform:translateY(-50%); width:98px; min-height:36px; padding:6px; border:0; background:transparent; color:var(--green); font-size:12px; font-weight:650; cursor:pointer; border-radius:6px; }
 .auth-grid:has(.institution-fields:not([hidden])) { align-items:start; }
+
+.account-name { display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.role-chip { min-width:0; }
+.role-chip .account-name { max-width:200px; }
+.mobile-logout { margin:12px 0 4px; }
+@media(max-width:440px) { .role-chip .account-name { max-width:150px; } }

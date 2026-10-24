@@ -2,12 +2,12 @@
 
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\RegistrationController;
+use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\LayoutPreviewController;
+use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [SessionController::class, 'entry'])->name('home');
 
 Route::prefix('preview')->name('preview.')->group(function () {
     Route::get('/', [LayoutPreviewController::class, 'index'])->name('index');
@@ -17,6 +17,8 @@ Route::prefix('preview')->name('preview.')->group(function () {
 });
 
 Route::middleware('guest')->group(function () {
+    Route::get('/login', [SessionController::class, 'create'])->name('login');
+    Route::post('/login', [SessionController::class, 'store'])->middleware('throttle:20,1')->name('login.store');
     Route::get('/register', [RegistrationController::class, 'create'])->name('register');
     Route::post('/register', [RegistrationController::class, 'store'])->middleware('throttle:6,1')->name('register.store');
     Route::get('/verification-notice', [EmailVerificationController::class, 'notice'])->name('verification.notice');
@@ -24,3 +26,11 @@ Route::middleware('guest')->group(function () {
 });
 Route::get('/verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])->whereNumber('id')->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
 Route::get('/email/verified', [EmailVerificationController::class, 'complete'])->name('verification.complete');
+
+Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
+Route::middleware(['auth', 'account.eligible'])->group(function () {
+    Route::get('/sertifikasi/menunggu-verifikasi', [WorkspaceController::class, 'institutionStatus'])->middleware('workspace.role:sertifikasi')->name('institution.status');
+    Route::get('/{role}/{page?}', [WorkspaceController::class, 'show'])
+        ->whereIn('role', ['pelamar', 'admin', 'sertifikasi'])
+        ->middleware(['workspace.role', 'institution.active'])->name('workspace');
+});
