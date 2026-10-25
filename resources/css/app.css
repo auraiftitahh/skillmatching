@@ -170,3 +170,27 @@ textarea { resize:vertical; min-height:112px; }
 .institutions-table { min-width:980px; }
 @media(max-width:1100px) { .institution-filters { grid-template-columns:minmax(0,1fr) minmax(160px,1fr); } .institution-filters .actions { grid-column:1/-1; } }
 @media(max-width:520px) { .institution-filters { grid-template-columns:1fr; } .institution-filters .actions .button { flex:1; } }
+
+.institution-status-page { max-width:1080px; margin:0 auto; padding:24px 32px 0; min-height:100dvh; display:flex; flex-direction:column; }
+.status-page-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; padding-bottom:24px; border-bottom:1px solid var(--line); }
+.status-page-main { flex:1; padding:32px 0 12px; min-width:0; }
+.status-overview-heading { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; }
+.status-overview-heading h2 { margin-bottom:6px; overflow-wrap:anywhere; }
+.status-overview-heading p { margin-bottom:0; }
+.status-message { margin:24px 0; }
+.eligibility-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:20px 0; }
+.eligibility-item { display:flex; align-items:flex-start; gap:10px; padding:16px 14px; border:1px solid var(--line); border-radius:10px; background:#f8fbf9; min-width:0; }
+.eligibility-item .icon { color:var(--green); margin-top:4px; }
+.eligibility-item span { display:block; color:var(--muted); font-size:12px; margin-bottom:5px; }
+.eligibility-item strong { display:block; color:var(--ink); font-size:14px; line-height:1.4; }
+.status-next-step { border-top:1px solid var(--line); padding-top:22px; margin-top:24px; }
+.status-next-step h3 { font-size:15px; margin-bottom:8px; }
+.status-next-step p { font-size:14px; max-width:750px; }
+.status-access-note { margin:20px 0 0; }
+.status-history-panel summary { cursor:pointer; font-size:16px; font-weight:650; min-height:30px; }
+.status-history-panel summary .badge { margin-left:8px; vertical-align:middle; }
+.status-history-panel[open] summary { padding-bottom:16px; }
+.empty-decision-note { margin:0; font-size:14px; }
+.status-page-footer { border-top:1px solid var(--line); padding:22px 0; color:var(--muted); font-size:12px; text-align:center; }
+@media(max-width:760px) { .institution-status-page { padding:20px 20px 0; } .eligibility-grid { grid-template-columns:1fr; } .status-page-main { padding-top:24px; } }
+@media(max-width:440px) { .institution-status-page { padding:18px 16px 0; } .status-page-header .brand { font-size:19px; gap:9px; } .status-page-header .brand-mark { width:35px; height:35px; border-radius:10px; } .status-page-header .button { padding:9px 12px; font-size:12px; } .status-next-step .actions { flex-direction:column; align-items:stretch; } .status-next-step .button { width:100%; } }

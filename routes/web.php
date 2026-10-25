@@ -44,6 +44,7 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::get('/akun/{user}', [AccountController::class, 'show'])->whereNumber('user')->name('accounts.show');
         Route::patch('/akun/{user}/status', [AccountController::class, 'updateStatus'])->whereNumber('user')->name('accounts.status');
     });
+    Route::get('/sertifikasi/status-akun', [WorkspaceController::class, 'institutionStatus'])->middleware('workspace.role:sertifikasi')->name('institution.account-status');
     Route::get('/sertifikasi/menunggu-verifikasi', [WorkspaceController::class, 'institutionStatus'])->middleware('workspace.role:sertifikasi')->name('institution.status');
     Route::get('/{role}/{page?}', [WorkspaceController::class, 'show'])
         ->whereIn('role', ['pelamar', 'admin', 'sertifikasi'])
