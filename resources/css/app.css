@@ -194,3 +194,24 @@ textarea { resize:vertical; min-height:112px; }
 .status-page-footer { border-top:1px solid var(--line); padding:22px 0; color:var(--muted); font-size:12px; text-align:center; }
 @media(max-width:760px) { .institution-status-page { padding:20px 20px 0; } .eligibility-grid { grid-template-columns:1fr; } .status-page-main { padding-top:24px; } }
 @media(max-width:440px) { .institution-status-page { padding:18px 16px 0; } .status-page-header .brand { font-size:19px; gap:9px; } .status-page-header .brand-mark { width:35px; height:35px; border-radius:10px; } .status-page-header .button { padding:9px 12px; font-size:12px; } .status-next-step .actions { flex-direction:column; align-items:stretch; } .status-next-step .button { width:100%; } }
+
+.profile-grid { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(240px,1fr); gap:20px; align-items:start; }
+.profile-summary .empty-icon { width:56px; height:56px; margin-bottom:18px; }
+.profile-summary h2 { overflow-wrap:anywhere; }
+.profile-summary .account-facts { grid-template-columns:1fr; }
+.form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 20px; }
+.experience-intro { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:24px; }
+.experience-intro .section-description { margin:0; }
+.experience-card-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; }
+.experience-card h2 { margin:12px 0 6px; overflow-wrap:anywhere; }
+.experience-organization { color:var(--ink); font-size:14px; overflow-wrap:anywhere; margin:0; }
+.experience-period { margin:16px 0; font-size:13px; }
+.experience-description summary { color:var(--green); font-size:14px; cursor:pointer; min-height:36px; }
+.experience-description p { white-space:pre-wrap; overflow-wrap:anywhere; font-size:14px; margin:10px 0 20px; }
+.delete-confirmation { margin-top:20px; border-top:1px solid var(--line); padding-top:12px; }
+.delete-confirmation summary { color:#983d33; cursor:pointer; font-size:13px; min-height:32px; }
+.delete-panel { margin-top:10px; padding:16px; border:1px solid #ecd7d2; border-radius:10px; background:#fff8f6; }
+.delete-panel p { font-size:14px; overflow-wrap:anywhere; }
+.experience-form-card { max-width:900px; }
+@media(max-width:1100px) { .profile-grid { grid-template-columns:1fr; gap:0; } }
+@media(max-width:600px) { .form-grid { grid-template-columns:1fr; } .experience-card-heading { flex-direction:column; gap:12px; } .experience-intro .button { width:100%; } }

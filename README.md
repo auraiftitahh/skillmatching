@@ -144,3 +144,13 @@ Pending, ditolak, dinonaktifkan dan profil belum tersedia memiliki arahan berbed
 Catatan keputusan yang belum ada ditampilkan secara jujur, tanpa alasan buatan. Jika status database tidak sama dengan keputusan terakhir yang tercatat, halaman meminta konfirmasi Admin dan tidak menganggap catatan lama sebagai alasan status sekarang. Tidak ada email nyata yang dikirim oleh pembukaan halaman status.
 
 Tidak ada migrasi baru di SCRUM-82. Clone Wisnu yang belum pernah dimigrasikan tetap perlu php artisan migrate --seed untuk menerapkan struktur tahap sebelumnya dan akun contoh pada database Wisnu. Jangan gunakan migrate:fresh. Jalankan npm run build dan php artisan serve --host=127.0.0.1 --port=8104. Gunakan browser berbeda untuk Admin dan lembaga saat mencoba perubahan keputusan; refresh halaman lembaga untuk melihat hasilnya.
+
+## SCRUM-57: profil dan riwayat Pelamar
+
+Profil Saya (/pelamar/profil) mengelola nama, telepon, domisili dan status pekerjaan. Email hanya dibaca; role, password, verifikasi email dan status aktif tidak dapat diubah melalui profil. Field opsional dapat dikosongkan. Semua perubahan profil diarahkan ke akun yang login, bukan ID dari form/query.
+
+Riwayat Pengalaman (/pelamar/riwayat) menyediakan tambah, ubah, hapus, pencarian posisi/instansi dan filter pekerjaan/pendidikan/organisasi. Riwayat hanya diambil melalui relasi pemilik; akses ID riwayat pengguna lain menghasilkan 404. Penghapusan memerlukan konfirmasi di tampilan. Semua teks uraian ditampilkan sebagai teks biasa, bukan HTML aktif. Riwayat tidak menambahkan skill otomatis; taksonomi dan konfirmasi skill dikerjakan pada tiket selanjutnya.
+
+Tanggal bersifat opsional, tetapi tanggal selesai memerlukan tanggal mulai dan tidak boleh lebih awal. Tanggal di masa depan ditolak berdasarkan hari di Asia/Jakarta. Pilihan Masih berlangsung menyembunyikan/menonaktifkan tanggal selesai dan server selalu mengosongkan tanggal selesai saat pilihan itu aktif. Nilai tanggal pada daftar ditampilkan dengan nama bulan Indonesia. Perubahan yang gagal validasi tidak menyimpan sebagian data.
+
+Ada dua migrasi tambahan: kolom profil pada users dan tabel user_experiences. Jalankan php artisan migrate pada database clone Aura, tanpa migrate:fresh dan tanpa mengulang seeder. Migrasi tidak mengubah password atau menghapus akun yang sudah ada. Setelah npm run build, jalankan php artisan serve --host=127.0.0.1 --port=8101. Profil dan riwayat digabung dalam satu commit SCRUM-57 sesuai rencana tahap akhir; PBI-02 belum selesai sampai pilihan skill, level dan konfirmasi saran tersedia.
