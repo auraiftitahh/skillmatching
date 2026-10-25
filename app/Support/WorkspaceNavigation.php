@@ -30,6 +30,7 @@ class WorkspaceNavigation
         ],
         'sertifikasi' => [
             'dashboard' => ['Dashboard Badan Sertifikasi', 'home'],
+            'status-akun' => ['Status Akun Lembaga', 'badge'],
             'pengajuan' => ['Pengajuan Pelatihan', 'book'],
             'peserta' => ['Peserta Pelatihan', 'user'],
             'kelulusan' => ['Konfirmasi Kelulusan', 'badge'],

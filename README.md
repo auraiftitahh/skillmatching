@@ -134,3 +134,13 @@ Transisi: pending dapat disetujui atau ditolak; rejected dapat disetujui setelah
 Status aktif akun, role dan email_verified_at tidak diubah oleh keputusan lembaga. Lembaga yang disetujui tetap membutuhkan akun aktif serta email terverifikasi untuk akses operasional. Penonaktifan lembaga mencabut akses operasional sesi yang sudah login pada permintaan berikutnya. Tidak ada email keputusan nyata yang dikirim pada tahap ini. Halaman status pribadi dan penjelasan riwayat lembaga dilengkapi di SCRUM-82.
 
 Ada satu migrasi baru institution_status_changes. Di clone Dewanti jalankan php artisan migrate, tanpa migrate:fresh dan tanpa mengulang seeder bila akun sudah tersedia. Migrasi juga menerapkan tabel riwayat akun SCRUM-80 bila belum dipasang di database clone ini. Setelah npm run build, jalankan php artisan serve --host=127.0.0.1 --port=8103 untuk demo.
+
+## SCRUM-82: status akun lembaga dan batas akses
+
+Lembaga membuka /sertifikasi/status-akun untuk melihat identitasnya, tiga syarat akses, keputusan terakhir, alasan, petugas, tanggal WIB dan riwayat paginasi. Riwayat disembunyikan dalam panel yang dapat dibuka agar tampilan awal tetap ringkas. Semua data diambil dari lembaga milik akun yang login; ID lembaga/user pada query tidak menentukan data yang ditampilkan.
+
+Pending, ditolak, dinonaktifkan dan profil belum tersedia memiliki arahan berbeda serta tombol Cek status terbaru. Tidak ada tombol untuk menyetujui diri sendiri. Lembaga aktif memiliki tombol dashboard dan menu Status Akun Lembaga; URL lama /sertifikasi/menunggu-verifikasi tetap mengarahkan lembaga aktif ke dashboard. Akun nonaktif ditolak dan email belum terverifikasi diarahkan ke verifikasi; keduanya tidak dapat memakai halaman status sebagai jalan pintas akses operasional.
+
+Catatan keputusan yang belum ada ditampilkan secara jujur, tanpa alasan buatan. Jika status database tidak sama dengan keputusan terakhir yang tercatat, halaman meminta konfirmasi Admin dan tidak menganggap catatan lama sebagai alasan status sekarang. Tidak ada email nyata yang dikirim oleh pembukaan halaman status.
+
+Tidak ada migrasi baru di SCRUM-82. Clone Wisnu yang belum pernah dimigrasikan tetap perlu php artisan migrate --seed untuk menerapkan struktur tahap sebelumnya dan akun contoh pada database Wisnu. Jangan gunakan migrate:fresh. Jalankan npm run build dan php artisan serve --host=127.0.0.1 --port=8104. Gunakan browser berbeda untuk Admin dan lembaga saat mencoba perubahan keputusan; refresh halaman lembaga untuk melihat hasilnya.

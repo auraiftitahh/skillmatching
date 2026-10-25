@@ -59,6 +59,7 @@ class LayoutPreviewTest extends TestCase
             ['admin', 'aktivitas', 'Riwayat Aktivitas'],
             ['admin', 'laporan', 'Laporan'],
             ['sertifikasi', 'dashboard', 'Dashboard Badan Sertifikasi'],
+            ['sertifikasi', 'status-akun', 'Status Akun Lembaga'],
             ['sertifikasi', 'pengajuan', 'Pengajuan Pelatihan'],
             ['sertifikasi', 'peserta', 'Peserta Pelatihan'],
             ['sertifikasi', 'kelulusan', 'Konfirmasi Kelulusan'],
