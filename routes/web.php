@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\InstitutionReviewController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordRecoveryController;
 use App\Http\Controllers\Auth\RegistrationController;
@@ -36,6 +37,9 @@ Route::get('/email/verified', [EmailVerificationController::class, 'complete'])-
 Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function () {
     Route::prefix('admin')->name('admin.')->middleware('workspace.role:admin')->group(function () {
+        Route::get('/persetujuan-lembaga', [InstitutionReviewController::class, 'index'])->name('institutions.index');
+        Route::get('/persetujuan-lembaga/{body}', [InstitutionReviewController::class, 'show'])->whereNumber('body')->name('institutions.show');
+        Route::post('/persetujuan-lembaga/{body}/keputusan', [InstitutionReviewController::class, 'decide'])->whereNumber('body')->name('institutions.decide');
         Route::get('/akun', [AccountController::class, 'index'])->name('accounts.index');
         Route::get('/akun/{user}', [AccountController::class, 'show'])->whereNumber('user')->name('accounts.show');
         Route::patch('/akun/{user}/status', [AccountController::class, 'updateStatus'])->whereNumber('user')->name('accounts.status');
