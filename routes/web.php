@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\InstitutionReviewController;
+use App\Http\Controllers\Applicant\ExperienceController;
+use App\Http\Controllers\Applicant\ProfileController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordRecoveryController;
 use App\Http\Controllers\Auth\RegistrationController;
@@ -36,6 +38,16 @@ Route::get('/email/verified', [EmailVerificationController::class, 'complete'])-
 
 Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function () {
+    Route::prefix('pelamar')->name('applicant.')->middleware('workspace.role:pelamar')->group(function () {
+        Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
+        Route::get('/riwayat', [ExperienceController::class, 'index'])->name('experiences.index');
+        Route::get('/riwayat/tambah', [ExperienceController::class, 'create'])->name('experiences.create');
+        Route::post('/riwayat', [ExperienceController::class, 'store'])->name('experiences.store');
+        Route::get('/riwayat/{experience}/ubah', [ExperienceController::class, 'edit'])->whereNumber('experience')->name('experiences.edit');
+        Route::put('/riwayat/{experience}', [ExperienceController::class, 'update'])->whereNumber('experience')->name('experiences.update');
+        Route::delete('/riwayat/{experience}', [ExperienceController::class, 'destroy'])->whereNumber('experience')->name('experiences.destroy');
+    });
     Route::prefix('admin')->name('admin.')->middleware('workspace.role:admin')->group(function () {
         Route::get('/persetujuan-lembaga', [InstitutionReviewController::class, 'index'])->name('institutions.index');
         Route::get('/persetujuan-lembaga/{body}', [InstitutionReviewController::class, 'show'])->whereNumber('body')->name('institutions.show');

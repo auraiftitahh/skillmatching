@@ -46,3 +46,28 @@ window.addEventListener('pageshow', (event) => {
         window.location.reload();
     }
 });
+
+document.querySelectorAll('[data-experience-current]').forEach((checkbox) => {
+    const container = checkbox.closest('form').querySelector('[data-experience-end]');
+    const updateEndDate = () => {
+        container.hidden = checkbox.checked;
+        container.querySelector('input').disabled = checkbox.checked;
+    };
+    checkbox.addEventListener('change', updateEndDate);
+    updateEndDate();
+});
+document.querySelectorAll('[data-experience-type]').forEach((select) => {
+    const labels = {
+        work: ['Nama perusahaan', 'Posisi pekerjaan'],
+        education: ['Nama institusi pendidikan', 'Program studi atau jenjang'],
+        organization: ['Nama organisasi', 'Peran dalam organisasi'],
+    };
+    const updateLabels = () => {
+        const selected = labels[select.value] || labels.work;
+        const form = select.closest('form');
+        form.querySelector('[data-organization-label]').textContent = selected[0];
+        form.querySelector('[data-title-label]').textContent = selected[1];
+    };
+    select.addEventListener('change', updateLabels);
+    updateLabels();
+});
