@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['user_id', 'name', 'contact', 'document_path', 'status', 'verified_at'])]
 class CertificationBody extends Model
@@ -27,6 +28,11 @@ class CertificationBody extends Model
     protected function casts(): array
     {
         return ['verified_at' => 'datetime'];
+    }
+
+    public function statusChanges(): HasMany
+    {
+        return $this->hasMany(InstitutionStatusChange::class);
     }
 
     public function user(): BelongsTo

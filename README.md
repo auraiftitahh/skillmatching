@@ -124,3 +124,13 @@ Status akun non-Admin dapat diaktifkan/dinonaktifkan dengan alasan wajib 5–500
 Status dan riwayat disimpan dalam satu transaksi. Riwayat khusus akun mencatat kondisi sebelum/sesudah, alasan, nama petugas dan waktu yang ditampilkan dalam WIB. Snapshot identitas tetap tersimpan bila akun dihapus dari database; tidak ada fitur hapus akun pada tahap ini. Histori aktivitas platform secara umum tetap di luar cakupan SCRUM-80.
 
 Ada satu migrasi baru untuk tabel account_status_changes. Pada clone Anata jalankan php artisan migrate (tanpa migrate:fresh) setelah memastikan database lokal benar. Tidak perlu mengulang seeder bila akun contoh sudah tersedia. Jalankan npm run build sebelum mencoba tampilan. Menonaktifkan akun mencabut akses sesi pada permintaan operasional berikutnya; mengaktifkan kembali akun lembaga tidak menyetujui lembaga. Persetujuan lembaga dikerjakan pada SCRUM-81.
+
+## SCRUM-81: persetujuan dan status lembaga
+
+Admin membuka Persetujuan Lembaga (/admin/persetujuan-lembaga). Daftar awal menampilkan pending; gunakan Semua status untuk melihat lembaga lain. Pencarian mencakup lembaga, penanggung jawab dan email. Detail menampilkan informasi lembaga, kelayakan akun, pilihan keputusan dan riwayat. Alasan wajib 5–500 karakter.
+
+Transisi: pending dapat disetujui atau ditolak; rejected dapat disetujui setelah tinjauan ulang; active dapat dinonaktifkan; disabled yang punya verified_at dapat diaktifkan kembali. Data disabled lama tanpa catatan persetujuan harus melalui keputusan Setujui setelah tinjauan. Aktivasi kembali mempertahankan tanggal persetujuan sebelumnya. Semua keputusan memeriksa status awal dan disimpan bersama riwayat dalam satu transaksi; keputusan ganda/stale ditolak.
+
+Status aktif akun, role dan email_verified_at tidak diubah oleh keputusan lembaga. Lembaga yang disetujui tetap membutuhkan akun aktif serta email terverifikasi untuk akses operasional. Penonaktifan lembaga mencabut akses operasional sesi yang sudah login pada permintaan berikutnya. Tidak ada email keputusan nyata yang dikirim pada tahap ini. Halaman status pribadi dan penjelasan riwayat lembaga dilengkapi di SCRUM-82.
+
+Ada satu migrasi baru institution_status_changes. Di clone Dewanti jalankan php artisan migrate, tanpa migrate:fresh dan tanpa mengulang seeder bila akun sudah tersedia. Migrasi juga menerapkan tabel riwayat akun SCRUM-80 bila belum dipasang di database clone ini. Setelah npm run build, jalankan php artisan serve --host=127.0.0.1 --port=8103 untuk demo.
