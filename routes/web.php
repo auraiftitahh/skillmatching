@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\InstitutionReviewController;
 use App\Http\Controllers\Admin\SkillCatalogController;
+use App\Http\Controllers\Admin\TrainingReviewController;
 use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\ProfileController;
 use App\Http\Controllers\Auth\EmailVerificationController;
@@ -54,6 +55,9 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::get('/persetujuan-lembaga', [InstitutionReviewController::class, 'index'])->name('institutions.index');
         Route::get('/persetujuan-lembaga/{body}', [InstitutionReviewController::class, 'show'])->whereNumber('body')->name('institutions.show');
         Route::post('/persetujuan-lembaga/{body}/keputusan', [InstitutionReviewController::class, 'decide'])->whereNumber('body')->name('institutions.decide');
+        Route::get('/pengajuan-pelatihan', [TrainingReviewController::class, 'index'])->name('training-reviews.index');
+        Route::get('/pengajuan-pelatihan/{submission}', [TrainingReviewController::class, 'show'])->whereNumber('submission')->name('training-reviews.show');
+        Route::post('/pengajuan-pelatihan/{submission}/keputusan', [TrainingReviewController::class, 'decide'])->whereNumber('submission')->name('training-reviews.decide');
         Route::get('/skill', [SkillCatalogController::class, 'index'])->name('skills.index');
         Route::get('/skill/{skill}', [SkillCatalogController::class, 'edit'])->whereNumber('skill')->name('skills.edit');
         Route::patch('/skill/{skill}', [SkillCatalogController::class, 'update'])->whereNumber('skill')->name('skills.update');
