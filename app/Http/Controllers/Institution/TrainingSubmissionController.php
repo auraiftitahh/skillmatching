@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Institution;
 use App\Http\Controllers\Controller;
 use App\Models\Skill;
 use App\Models\TrainingSubmission;
+use App\Support\TrainingSubmissionPayload;
 use App\Support\WorkspacePage;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -54,7 +55,7 @@ class TrainingSubmissionController extends Controller
 
     private function save(Request $r, ?TrainingSubmission $submission): RedirectResponse
     {
-        $data = $r->validate(['title' => 'required|string|max:190', 'description' => 'nullable|string|max:5000', 'mode' => ['nullable', Rule::in(['online', 'offline', 'hybrid'])], 'duration_hours' => 'nullable|integer|min:1|max:10000', 'weekly_hours' => 'nullable|integer|min:1|max:168', 'cost' => 'nullable|numeric|min:0|max:999999999', 'source_url' => 'nullable|url:http,https|max:1000', 'outcomes' => 'nullable|array|max:20', 'outcomes.*.skill_id' => ['nullable', Rule::in(array_merge(['new'], Skill::where('is_active', true)->pluck('id')->map(fn ($id) => (string) $id)->all()))], 'outcomes.*.new_name' => 'nullable|string|max:150', 'outcomes.*.category' => 'nullable|string|max:150', 'outcomes.*.description' => 'nullable|string|max:1500', 'outcomes.*.target_level' => 'nullable|integer|between:1,4']);
+        $data = TrainingSubmissionPayload::validate($r->all());
         $id = DB::transaction(function () use ($r, $data, $submission): int {
             DB::table('certification_bodies')->where('id', $r->user()->certificationBody->id)->lockForUpdate()->first();
             if ($submission) {
@@ -76,8 +77,22 @@ class TrainingSubmissionController extends Controller
         return view('institution.submissions.show', [...WorkspacePage::data($r, 'sertifikasi', 'pengajuan', 'Detail Pengajuan Pelatihan', route('institution.submissions.index')), 'submission' => $this->owned($r, $submission)]);
     }
 
+    public function send(Request $r, int $submission): RedirectResponse
+    {
+        $owned = $this->owned($r, $submission);
+        DB::transaction(function () use ($owned): void {
+            DB::table('certification_bodies')->where('id', $owned->certification_body_id)->lockForUpdate()->first();
+            $record = TrainingSubmission::whereKey($owned->id)->lockForUpdate()->firstOrFail();
+            abort_unless($record->status === 'draft', 422, 'Pengajuan sudah dikirim. Tunggu hasil tinjauan Admin.');
+            $payload = TrainingSubmissionPayload::validate($record->payload, true);
+            $record->update(['payload' => $payload, 'status' => 'pending', 'submitted_at' => now(), 'review_note' => null, 'reviewed_at' => null, 'reviewed_by' => null]);
+        });
+
+        return redirect()->route('institution.submissions.show', $owned)->with('success', 'Pengajuan terkirim. Tunggu tinjauan Admin sebelum pelatihan diterbitkan.');
+    }
+
     private function owned(Request $r, int $id): TrainingSubmission
     {
-        return TrainingSubmission::where('certification_body_id',$r->user()->certificationBody->id)->findOrFail($id);
+        return TrainingSubmission::where('certification_body_id', $r->user()->certificationBody->id)->findOrFail($id);
     }
 }
