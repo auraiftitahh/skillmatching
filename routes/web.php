@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordRecoveryController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\Auth\SessionController;
+use App\Http\Controllers\Institution\TrainingSubmissionController;
 use App\Http\Controllers\LayoutPreviewController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
@@ -59,6 +60,14 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::get('/akun', [AccountController::class, 'index'])->name('accounts.index');
         Route::get('/akun/{user}', [AccountController::class, 'show'])->whereNumber('user')->name('accounts.show');
         Route::patch('/akun/{user}/status', [AccountController::class, 'updateStatus'])->whereNumber('user')->name('accounts.status');
+    });
+    Route::prefix('sertifikasi')->name('institution.')->middleware(['workspace.role:sertifikasi', 'institution.active'])->group(function () {
+        Route::get('/pengajuan', [TrainingSubmissionController::class, 'index'])->name('submissions.index');
+        Route::get('/pengajuan/tambah', [TrainingSubmissionController::class, 'create'])->name('submissions.create');
+        Route::post('/pengajuan', [TrainingSubmissionController::class, 'store'])->name('submissions.store');
+        Route::get('/pengajuan/{submission}', [TrainingSubmissionController::class, 'show'])->whereNumber('submission')->name('submissions.show');
+        Route::get('/pengajuan/{submission}/ubah', [TrainingSubmissionController::class, 'edit'])->whereNumber('submission')->name('submissions.edit');
+        Route::put('/pengajuan/{submission}', [TrainingSubmissionController::class, 'update'])->whereNumber('submission')->name('submissions.update');
     });
     Route::get('/sertifikasi/status-akun', [WorkspaceController::class, 'institutionStatus'])->middleware('workspace.role:sertifikasi')->name('institution.account-status');
     Route::get('/sertifikasi/menunggu-verifikasi', [WorkspaceController::class, 'institutionStatus'])->middleware('workspace.role:sertifikasi')->name('institution.status');
