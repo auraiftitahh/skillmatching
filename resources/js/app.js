@@ -71,3 +71,28 @@ document.querySelectorAll('[data-experience-type]').forEach((select) => {
     select.addEventListener('change', updateLabels);
     updateLabels();
 });
+
+const outcomes = document.querySelector('[data-outcomes]');
+if (outcomes) {
+    const renumber = () => {
+        outcomes.querySelectorAll('[data-outcome-row]').forEach((row, index) => {
+            row.querySelector('[data-row-number]').textContent = String(index + 1);
+            row.querySelectorAll('[name]').forEach((input) => { input.name = input.name.replace(/outcomes\[\d+\]/, `outcomes[${index}]`); });
+        });
+    };
+    const refresh = (row) => {
+        const fields = row.querySelector('[data-new-outcome]');
+        fields.hidden = row.querySelector('[data-outcome-select]').value !== 'new';
+        fields.querySelectorAll('input').forEach((input) => { input.disabled = fields.hidden; });
+    };
+    outcomes.querySelectorAll('[data-outcome-row]').forEach(refresh);
+    outcomes.addEventListener('change', (event) => { if (event.target.matches('[data-outcome-select]')) refresh(event.target.closest('[data-outcome-row]')); });
+    outcomes.addEventListener('click', (event) => {
+        if (event.target.matches('[data-remove-outcome]')) { event.target.closest('[data-outcome-row]').remove(); renumber(); }
+    });
+    document.querySelector('[data-add-outcome]').addEventListener('click', () => {
+        if (outcomes.children.length >= 20) { document.querySelector('[data-outcome-limit]').textContent = 'Batas 20 capaian telah tercapai.'; return; }
+        const fragment = document.getElementById('outcome-template').content.cloneNode(true);
+        outcomes.append(fragment); renumber(); refresh(outcomes.lastElementChild);
+    });
+}
