@@ -67,6 +67,7 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::post('/pengajuan', [TrainingSubmissionController::class, 'store'])->name('submissions.store');
         Route::get('/pengajuan/{submission}', [TrainingSubmissionController::class, 'show'])->whereNumber('submission')->name('submissions.show');
         Route::get('/pengajuan/{submission}/ubah', [TrainingSubmissionController::class, 'edit'])->whereNumber('submission')->name('submissions.edit');
+        Route::post('/pengajuan/{submission}/kirim', [TrainingSubmissionController::class, 'send'])->whereNumber('submission')->name('submissions.send');
         Route::put('/pengajuan/{submission}', [TrainingSubmissionController::class, 'update'])->whereNumber('submission')->name('submissions.update');
     });
     Route::get('/sertifikasi/status-akun', [WorkspaceController::class, 'institutionStatus'])->middleware('workspace.role:sertifikasi')->name('institution.account-status');
