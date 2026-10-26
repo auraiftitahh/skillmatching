@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\UserExperience;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -101,7 +100,7 @@ class ApplicantProfileAndExperienceTest extends TestCase
         $this->assertSame($type, $record->type);
         $this->assertSame($user->id, $record->user->id);
         $this->assertSame(1, $user->experiences()->count());
-        $this->assertFalse(Schema::hasTable('skills'));
+        $this->assertDatabaseCount('skills', 0);
         $this->get('/pelamar/riwayat')->assertOk()->assertSee('Staf Gudang')->assertSee('01 Januari 2023')->assertSee('31 Desember 2024');
     }
 
