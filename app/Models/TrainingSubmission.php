@@ -16,7 +16,7 @@ class TrainingSubmission extends Model
 
     protected function casts(): array
     {
-        return ['payload' => 'array', 'submitted_at' => 'datetime', 'reviewed_at' => 'datetime'];
+        return ['base_version' => 'integer', 'payload' => 'array', 'submitted_at' => 'datetime', 'reviewed_at' => 'datetime'];
     }
 
     public function body(): BelongsTo

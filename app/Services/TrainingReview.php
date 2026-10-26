@@ -52,11 +52,20 @@ final class TrainingReview
                             $outcome['resolved_skill_id'] = (int) $skillId;
                         }
                         unset($outcome);
-                        abort_if($trainingId !== null, 422, 'Revisi pelatihan belum dapat diproses melalui pengajuan baru.');
-                        $training = Training::create([...array_intersect_key($payload, array_flip(['title', 'description', 'mode', 'duration_hours', 'weekly_hours', 'cost', 'source_url'])), 'certification_body_id' => $body->id, 'status' => 'active', 'version' => 1]);
+                        $fields = array_intersect_key($payload, array_flip(['title', 'description', 'mode', 'duration_hours', 'weekly_hours', 'cost', 'source_url']));
+                        if ($trainingId !== null) {
+                            $training = Training::where('certification_body_id', $body->id)->lockForUpdate()->findOrFail($trainingId);
+                            abort_unless($training->version === $s->base_version, 409, 'Versi pelatihan telah berubah. Periksa ulang revisi sebelum menyetujuinya.');
+                            TrainingSnapshot::preserve($training);
+                            $training->update([...$fields, 'version' => $training->version + 1]);
+                            $training->skills()->detach();
+                        } else {
+                            $training = Training::create([...$fields, 'certification_body_id' => $body->id, 'status' => 'active', 'version' => 1]);
+                        }
                         foreach ($resolved as $skillId => $level) {
                             $training->skills()->attach($skillId, ['target_level' => $level]);
                         }
+                        TrainingSnapshot::preserve($training->fresh());
                         $trainingId = $training->id;
                     }
                     $s->update(['payload' => $payload, 'training_id' => $trainingId, 'status' => $data['decision'], 'review_note' => $data['review_note'], 'reviewed_by' => $actor->id, 'reviewed_at' => now()]);

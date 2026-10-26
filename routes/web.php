@@ -66,6 +66,8 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::patch('/akun/{user}/status', [AccountController::class, 'updateStatus'])->whereNumber('user')->name('accounts.status');
     });
     Route::prefix('sertifikasi')->name('institution.')->middleware(['workspace.role:sertifikasi', 'institution.active'])->group(function () {
+        Route::get('/pelatihan', [TrainingSubmissionController::class, 'published'])->name('trainings.index');
+        Route::post('/pelatihan/{training}/revisi', [TrainingSubmissionController::class, 'revise'])->whereNumber('training')->name('trainings.revise');
         Route::get('/pengajuan', [TrainingSubmissionController::class, 'index'])->name('submissions.index');
         Route::get('/pengajuan/tambah', [TrainingSubmissionController::class, 'create'])->name('submissions.create');
         Route::post('/pengajuan', [TrainingSubmissionController::class, 'store'])->name('submissions.store');

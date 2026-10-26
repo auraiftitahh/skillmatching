@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Institution;
 
 use App\Http\Controllers\Controller;
 use App\Models\Skill;
+use App\Models\Training;
 use App\Models\TrainingSubmission;
 use App\Support\TrainingSubmissionPayload;
 use App\Support\WorkspacePage;
@@ -38,7 +39,7 @@ class TrainingSubmissionController extends Controller
 
     private function form(Request $r, TrainingSubmission $submission): View
     {
-        abort_unless($submission->status === 'draft', 422, 'Draf ini tidak dapat diubah.');
+        abort_unless(in_array($submission->status, ['draft', 'revision', 'rejected'], true), 422, 'Draf ini tidak dapat diubah.');
 
         return view('institution.submissions.form', [...WorkspacePage::data($r, 'sertifikasi', 'pengajuan', $submission->exists ? 'Ubah Draf Pelatihan' : 'Buat Draf Pelatihan', route('institution.submissions.index')), 'submission' => $submission, 'payload' => $submission->payload ?? [], 'skills' => Skill::where('is_active', true)->orderBy('name')->get()]);
     }
@@ -60,10 +61,11 @@ class TrainingSubmissionController extends Controller
             DB::table('certification_bodies')->where('id', $r->user()->certificationBody->id)->lockForUpdate()->first();
             if ($submission) {
                 $submission = TrainingSubmission::whereKey($submission->id)->lockForUpdate()->firstOrFail();
-                abort_unless($submission->status === 'draft', 422, 'Draf ini tidak dapat diubah.');
+                abort_unless(in_array($submission->status, ['draft', 'revision', 'rejected'], true), 422, 'Draf ini tidak dapat diubah.');
             }
             $submission ??= new TrainingSubmission(['certification_body_id' => $r->user()->certificationBody->id, 'status' => 'draft']);
             $submission->payload = $data;
+            $submission->status = 'draft';
             $submission->save();
 
             return $submission->id;
@@ -83,12 +85,35 @@ class TrainingSubmissionController extends Controller
         DB::transaction(function () use ($owned): void {
             DB::table('certification_bodies')->where('id', $owned->certification_body_id)->lockForUpdate()->first();
             $record = TrainingSubmission::whereKey($owned->id)->lockForUpdate()->firstOrFail();
-            abort_unless($record->status === 'draft', 422, 'Pengajuan sudah dikirim. Tunggu hasil tinjauan Admin.');
+            abort_unless(in_array($record->status, ['draft', 'revision', 'rejected'], true), 422, 'Pengajuan sudah dikirim. Tunggu hasil tinjauan Admin.');
             $payload = TrainingSubmissionPayload::validate($record->payload, true);
             $record->update(['payload' => $payload, 'status' => 'pending', 'submitted_at' => now(), 'review_note' => null, 'reviewed_at' => null, 'reviewed_by' => null]);
         });
 
         return redirect()->route('institution.submissions.show', $owned)->with('success', 'Pengajuan terkirim. Tunggu tinjauan Admin sebelum pelatihan diterbitkan.');
+    }
+
+    public function published(Request $r): View
+    {
+        return view('institution.submissions.published', [...WorkspacePage::data($r, 'sertifikasi', 'pengajuan', 'Pelatihan Terbit Saya', route('institution.submissions.index')), 'trainings' => Training::where('certification_body_id', $r->user()->certificationBody->id)->latest('id')->paginate(10)]);
+    }
+
+    public function revise(Request $r, int $training): RedirectResponse
+    {
+        $id = DB::transaction(function () use ($r, $training): int {
+            DB::table('certification_bodies')->where('id', $r->user()->certificationBody->id)->lockForUpdate()->first();
+            $record = Training::where('certification_body_id', $r->user()->certificationBody->id)->lockForUpdate()->findOrFail($training);
+            $existing = TrainingSubmission::where('training_id', $record->id)->whereIn('status', ['draft', 'pending', 'revision'])->first();
+            if ($existing) {
+                return $existing->id;
+            }
+            $payload = $record->only(['title', 'description', 'mode', 'duration_hours', 'weekly_hours', 'cost', 'source_url']);
+            $payload['outcomes'] = $record->skills()->get()->map(fn ($s) => ['skill_id' => $s->id, 'target_level' => (int) $s->pivot->target_level])->all();
+
+            return TrainingSubmission::create(['certification_body_id' => $record->certification_body_id, 'training_id' => $record->id, 'base_version' => $record->version, 'status' => 'draft', 'payload' => $payload])->id;
+        });
+
+        return redirect()->route('institution.submissions.show', $id)->with('success', 'Draf revisi tersedia. Katalog tetap memakai versi yang sudah disetujui.');
     }
 
     private function owned(Request $r, int $id): TrainingSubmission
