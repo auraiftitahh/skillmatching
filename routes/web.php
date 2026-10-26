@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\InstitutionReviewController;
+use App\Http\Controllers\Admin\SkillCatalogController;
 use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\ProfileController;
 use App\Http\Controllers\Auth\EmailVerificationController;
@@ -52,6 +53,9 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::get('/persetujuan-lembaga', [InstitutionReviewController::class, 'index'])->name('institutions.index');
         Route::get('/persetujuan-lembaga/{body}', [InstitutionReviewController::class, 'show'])->whereNumber('body')->name('institutions.show');
         Route::post('/persetujuan-lembaga/{body}/keputusan', [InstitutionReviewController::class, 'decide'])->whereNumber('body')->name('institutions.decide');
+        Route::get('/skill', [SkillCatalogController::class, 'index'])->name('skills.index');
+        Route::get('/skill/{skill}', [SkillCatalogController::class, 'edit'])->whereNumber('skill')->name('skills.edit');
+        Route::patch('/skill/{skill}', [SkillCatalogController::class, 'update'])->whereNumber('skill')->name('skills.update');
         Route::get('/akun', [AccountController::class, 'index'])->name('accounts.index');
         Route::get('/akun/{user}', [AccountController::class, 'show'])->whereNumber('user')->name('accounts.show');
         Route::patch('/akun/{user}/status', [AccountController::class, 'updateStatus'])->whereNumber('user')->name('accounts.status');
