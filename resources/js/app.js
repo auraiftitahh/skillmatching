@@ -105,3 +105,10 @@ if (skillSearch) {
         document.querySelector('[data-skill-empty]').hidden = visible > 0;
     });
 }
+
+document.querySelectorAll('[data-experience-type]').forEach((select) => {
+    const container = select.closest('form').querySelector('[data-experience-taxonomy]');
+    if (!container) return;
+    const refresh = () => { container.hidden = select.value !== 'work'; container.querySelector('select').disabled = container.hidden; };
+    select.addEventListener('change', refresh); refresh();
+});

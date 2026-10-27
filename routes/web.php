@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\TrainingReviewController;
 use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\ProfileController;
 use App\Http\Controllers\Applicant\SkillController;
+use App\Http\Controllers\Applicant\SkillSuggestionController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordRecoveryController;
 use App\Http\Controllers\Auth\RegistrationController;
@@ -45,6 +46,7 @@ Route::get('/email/verified', [EmailVerificationController::class, 'complete'])-
 Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function () {
     Route::prefix('pelamar')->name('applicant.')->middleware('workspace.role:pelamar')->group(function () {
+        Route::get('/skill/saran', [SkillSuggestionController::class, 'index'])->name('skills.suggestions');
         Route::get('/skill', [SkillController::class, 'edit'])->name('skills.edit');
         Route::put('/skill', [SkillController::class, 'update'])->name('skills.update');
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
