@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['type', 'organization', 'title', 'start_date', 'end_date', 'is_current', 'description'])]
+#[Fillable(['type', 'organization', 'title', 'start_date', 'end_date', 'is_current', 'description', 'job_taxonomy_id'])]
 class UserExperience extends Model
 {
     /** @use HasFactory<UserExperienceFactory> */

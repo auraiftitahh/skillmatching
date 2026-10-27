@@ -33,6 +33,15 @@ class SaveExperienceRequest extends FormRequest
             'end_date' => [Rule::excludeIf($this->boolean('is_current')), 'nullable', 'date_format:Y-m-d', 'after_or_equal:start_date', 'before_or_equal:'.$today],
             'is_current' => ['required', 'boolean'],
             'description' => ['nullable', 'string', 'max:2000'],
+            'job_taxonomy_id' => [Rule::excludeIf($this->input('type') !== 'work'), 'nullable', 'integer',
+                Rule::exists('job_taxonomies', 'id')->where(function ($query): void {
+                    $query->where('is_active', true);
+                    $current = $this->user()->experiences()->find($this->route('experience'));
+                    if ($current?->job_taxonomy_id) {
+                        $query->orWhere('id', $current->job_taxonomy_id);
+                    }
+                })],
+
         ];
     }
 

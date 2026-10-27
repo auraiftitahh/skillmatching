@@ -12,4 +12,4 @@
         <div class="pagination-wrap">{{ $experiences->links() }}</div>
     @endif
     <p class="form-hint">Riwayat yang dicatat tidak otomatis menambahkan keterampilan ke profil Anda.</p>
-</x-layouts.workspace>
+<a class="button button-outline" href="{{ route('applicant.skills.suggestions') }}">Lihat saran keterampilan dari riwayat</a></x-layouts.workspace>

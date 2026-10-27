@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Applicant;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Applicant\SaveExperienceRequest;
+use App\Models\JobTaxonomy;
 use App\Models\UserExperience;
 use App\Support\WorkspaceNavigation;
 use Illuminate\Contracts\View\View;
@@ -86,6 +87,7 @@ class ExperienceController extends Controller
         $data['start_date'] = $data['start_date'] ?? null;
         $data['end_date'] = $data['is_current'] ? null : ($data['end_date'] ?? null);
         $data['description'] = $data['description'] ?? null;
+        $data['job_taxonomy_id'] = $data['type'] === 'work' ? ($data['job_taxonomy_id'] ?? null) : null;
 
         return $data;
     }
@@ -94,6 +96,7 @@ class ExperienceController extends Controller
     {
         return view('applicant.experiences.form', array_merge($this->layout($request, $experience->exists ? 'Ubah Riwayat' : 'Tambah Riwayat'), [
             'experience' => $experience, 'filters' => $filters,
+            'taxonomies' => JobTaxonomy::where(fn ($q) => $q->where('is_active', true)->orWhere('id', $experience->job_taxonomy_id))->orderBy('name')->get(),
             'backUrl' => route('applicant.experiences.index', $filters),
         ]));
     }

@@ -94,7 +94,7 @@ class ApplicantProfileAndExperienceTest extends TestCase
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
-        $this->actingAs($user)->post('/pelamar/riwayat', $this->experienceData(['type' => $type, 'user_id' => $other->id, 'job_taxonomy_id' => 999]))->assertRedirect();
+        $this->actingAs($user)->post('/pelamar/riwayat', $this->experienceData(['type' => $type, 'user_id' => $other->id]))->assertRedirect();
         $record = UserExperience::firstOrFail();
         $this->assertSame($user->id, $record->user_id);
         $this->assertSame($type, $record->type);
