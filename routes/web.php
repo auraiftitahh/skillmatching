@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\InstitutionReviewController;
 use App\Http\Controllers\Admin\SkillCatalogController;
+use App\Http\Controllers\Admin\SkillRelationController;
 use App\Http\Controllers\Admin\TrainingReviewController;
 use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\ProfileController;
@@ -58,6 +59,9 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::get('/pengajuan-pelatihan', [TrainingReviewController::class, 'index'])->name('training-reviews.index');
         Route::get('/pengajuan-pelatihan/{submission}', [TrainingReviewController::class, 'show'])->whereNumber('submission')->name('training-reviews.show');
         Route::post('/pengajuan-pelatihan/{submission}/keputusan', [TrainingReviewController::class, 'decide'])->whereNumber('submission')->name('training-reviews.decide');
+        Route::get('/skill/{skill}/relasi', [SkillRelationController::class, 'index'])->whereNumber('skill')->name('skills.relations');
+        Route::post('/skill/{skill}/relasi', [SkillRelationController::class, 'store'])->whereNumber('skill')->name('skills.relations.store');
+        Route::delete('/skill/{skill}/relasi/{relation}', [SkillRelationController::class, 'destroy'])->whereNumber(['skill', 'relation'])->name('skills.relations.destroy');
         Route::get('/skill', [SkillCatalogController::class, 'index'])->name('skills.index');
         Route::get('/skill/{skill}', [SkillCatalogController::class, 'edit'])->whereNumber('skill')->name('skills.edit');
         Route::patch('/skill/{skill}', [SkillCatalogController::class, 'update'])->whereNumber('skill')->name('skills.update');
