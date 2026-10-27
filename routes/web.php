@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\InstitutionReviewController;
 use App\Http\Controllers\Admin\JobTaxonomyController;
 use App\Http\Controllers\Admin\SkillCatalogController;
 use App\Http\Controllers\Admin\SkillRelationController;
+use App\Http\Controllers\Admin\TrainingPublicationController;
 use App\Http\Controllers\Admin\TrainingReviewController;
 use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\ProfileController;
@@ -64,6 +65,10 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::post('/jabatan', [JobTaxonomyController::class, 'store'])->name('taxonomies.store');
         Route::get('/jabatan/{taxonomy}', [JobTaxonomyController::class, 'edit'])->whereNumber('taxonomy')->name('taxonomies.edit');
         Route::put('/jabatan/{taxonomy}', [JobTaxonomyController::class, 'update'])->whereNumber('taxonomy')->name('taxonomies.update');
+        Route::get('/pelatihan', [TrainingPublicationController::class, 'index'])->name('trainings.index');
+        Route::get('/pelatihan/{training}/publikasi', [TrainingPublicationController::class, 'edit'])->whereNumber('training')->name('trainings.publication');
+        Route::put('/pelatihan/{training}/prasyarat', [TrainingPublicationController::class, 'update'])->whereNumber('training')->name('trainings.prerequisites');
+        Route::patch('/pelatihan/{training}/publikasi', [TrainingPublicationController::class, 'status'])->whereNumber('training')->name('trainings.status');
         Route::get('/persetujuan-lembaga', [InstitutionReviewController::class, 'index'])->name('institutions.index');
         Route::get('/persetujuan-lembaga/{body}', [InstitutionReviewController::class, 'show'])->whereNumber('body')->name('institutions.show');
         Route::post('/persetujuan-lembaga/{body}/keputusan', [InstitutionReviewController::class, 'decide'])->whereNumber('body')->name('institutions.decide');
