@@ -23,6 +23,7 @@ class WorkspaceNavigation
             'persetujuan-lembaga' => ['Persetujuan Lembaga', 'badge'],
             'pengajuan-pelatihan' => ['Pengajuan Pelatihan', 'book'],
             'skill' => ['Katalog Keterampilan', 'spark'],
+            'jabatan' => ['Pemetaan Jabatan', 'briefcase'],
             'lowongan' => ['Lowongan Kerja', 'briefcase'],
             'bobot' => ['Pengaturan Bobot', 'settings'],
             'aktivitas' => ['Riwayat Aktivitas', 'history'],
