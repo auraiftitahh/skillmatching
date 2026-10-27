@@ -96,3 +96,12 @@ if (outcomes) {
         outcomes.append(fragment); renumber(); refresh(outcomes.lastElementChild);
     });
 }
+
+const skillSearch = document.querySelector('[data-skill-search]');
+if (skillSearch) {
+    skillSearch.addEventListener('input', () => {
+        const query = skillSearch.value.trim().toLocaleLowerCase('id'); let visible = 0;
+        document.querySelectorAll('[data-skill-option]').forEach((card) => { card.hidden = !card.dataset.search.includes(query); if (!card.hidden) visible += 1; });
+        document.querySelector('[data-skill-empty]').hidden = visible > 0;
+    });
+}
