@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SkillRelationController;
 use App\Http\Controllers\Admin\TrainingPublicationController;
 use App\Http\Controllers\Admin\TrainingReviewController;
 use App\Http\Controllers\Applicant\ExperienceController;
+use App\Http\Controllers\Applicant\JobCatalogController;
 use App\Http\Controllers\Applicant\ProfileController;
 use App\Http\Controllers\Applicant\SkillController;
 use App\Http\Controllers\Applicant\SkillSuggestionController;
@@ -55,6 +56,10 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::put('/skill', [SkillController::class, 'update'])->name('skills.update');
         Route::get('/pelatihan', [TrainingCatalogController::class, 'index'])->name('trainings.index');
         Route::get('/pelatihan/{training}', [TrainingCatalogController::class, 'show'])->whereNumber('training')->name('trainings.show');
+        Route::get('/lowongan', [JobCatalogController::class, 'index'])->name('jobs.index');
+        Route::get('/lowongan/{job}', [JobCatalogController::class, 'show'])->whereNumber('job')->name('jobs.show');
+        Route::post('/lowongan/{job}/simpan', [JobCatalogController::class, 'save'])->whereNumber('job')->name('jobs.save');
+        Route::delete('/lowongan/{job}/simpan', [JobCatalogController::class, 'unsave'])->whereNumber('job')->name('jobs.unsave');
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
         Route::get('/riwayat', [ExperienceController::class, 'index'])->name('experiences.index');
