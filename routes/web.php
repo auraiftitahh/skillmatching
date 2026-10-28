@@ -11,6 +11,7 @@ use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\ProfileController;
 use App\Http\Controllers\Applicant\SkillController;
 use App\Http\Controllers\Applicant\SkillSuggestionController;
+use App\Http\Controllers\Applicant\TrainingCatalogController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordRecoveryController;
 use App\Http\Controllers\Auth\RegistrationController;
@@ -50,6 +51,8 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::get('/skill/saran', [SkillSuggestionController::class, 'index'])->name('skills.suggestions');
         Route::get('/skill', [SkillController::class, 'edit'])->name('skills.edit');
         Route::put('/skill', [SkillController::class, 'update'])->name('skills.update');
+        Route::get('/pelatihan', [TrainingCatalogController::class, 'index'])->name('trainings.index');
+        Route::get('/pelatihan/{training}', [TrainingCatalogController::class, 'show'])->whereNumber('training')->name('trainings.show');
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
         Route::get('/riwayat', [ExperienceController::class, 'index'])->name('experiences.index');
