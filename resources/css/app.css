@@ -219,3 +219,14 @@ textarea { resize:vertical; min-height:112px; }
 .skill-options { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)); gap:18px; }
 .skill-options .card { margin-bottom:0; min-width:0; }
 .skill-options h2 { overflow-wrap:anywhere; }
+
+.domain-detail-grid { display:grid; grid-template-columns:minmax(0,1.75fr) minmax(250px,1fr); gap:22px; align-items:start; }
+.domain-detail-grid > * { min-width:0; }
+.domain-detail-aside { position:sticky; top:24px; }
+.training-facts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; padding:20px 0; }
+.training-facts span { display:block; font-size:13px; color:var(--muted); }
+.training-facts strong { display:block; overflow-wrap:anywhere; }
+.stacked-actions { display:grid; gap:12px; }
+.preserve-lines { white-space:pre-line; overflow-wrap:anywhere; }
+@media(max-width:1050px) { .domain-detail-grid { grid-template-columns:1fr; } .domain-detail-aside { position:static; } }
+@media(max-width:480px) { .training-facts { grid-template-columns:1fr; gap:12px; } }
