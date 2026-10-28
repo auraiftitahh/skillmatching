@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\JobVacancy;
 use App\Models\Training;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -26,5 +27,18 @@ final class Publication
         $completed = DB::table('training_enrollments')->where('user_id', $userId)->where('status', 'completed')->pluck('training_id')->map(fn ($id) => (int) $id)->all();
 
         return array_diff($required, $completed) === [];
+    }
+
+    public static function jobs(bool $activeOnly = true): Builder
+    {
+        $query = JobVacancy::whereDate('expires_at', '>=', now('Asia/Jakarta')->toDateString())
+            ->where('description', '!=', '')->where(fn ($q) => $q->where('source_url', 'like', 'https://%')->orWhere('source_url', 'like', 'http://%'))
+            ->whereHas('skills')->whereDoesntHave('skills', fn ($q) => $q->where('skills.is_active', false)
+            ->orWhere('job_required_skills.minimum_level', '<', 1)->orWhere('job_required_skills.minimum_level', '>', 4));
+        if ($activeOnly) {
+            $query->where('job_vacancies.status', 'active');
+        }
+
+        return $query;
     }
 }
