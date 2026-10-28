@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\InstitutionReviewController;
+use App\Http\Controllers\Admin\JobPublicationController;
 use App\Http\Controllers\Admin\JobTaxonomyController;
 use App\Http\Controllers\Admin\JobVacancyController;
 use App\Http\Controllers\Admin\SkillCatalogController;
@@ -73,6 +74,7 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::get('/pelatihan/{training}/publikasi', [TrainingPublicationController::class, 'edit'])->whereNumber('training')->name('trainings.publication');
         Route::put('/pelatihan/{training}/prasyarat', [TrainingPublicationController::class, 'update'])->whereNumber('training')->name('trainings.prerequisites');
         Route::patch('/pelatihan/{training}/publikasi', [TrainingPublicationController::class, 'status'])->whereNumber('training')->name('trainings.status');
+        Route::patch('/lowongan/{job}/publikasi', [JobPublicationController::class, 'update'])->whereNumber('job')->name('jobs.publication');
         Route::get('/lowongan', [JobVacancyController::class, 'index'])->name('jobs.index');
         Route::get('/lowongan/tambah', [JobVacancyController::class, 'create'])->name('jobs.create');
         Route::post('/lowongan', [JobVacancyController::class, 'store'])->name('jobs.store');
