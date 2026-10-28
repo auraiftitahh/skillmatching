@@ -112,3 +112,16 @@ document.querySelectorAll('[data-experience-type]').forEach((select) => {
     const refresh = () => { container.hidden = select.value !== 'work'; container.querySelector('select').disabled = container.hidden; };
     select.addEventListener('change', refresh); refresh();
 });
+
+const requirements = document.querySelector('[data-requirements]');
+if (requirements) {
+    const renumberRequirements = () => requirements.querySelectorAll('[data-requirement-row]').forEach((row,index) => {
+        row.querySelector('[data-requirement-number]').textContent = String(index + 1);
+        row.querySelectorAll('[name]').forEach((input) => { input.name = input.name.replace(/requirements\[\d+\]/, `requirements[${index}]`); });
+    });
+    requirements.addEventListener('click',(event) => { if (event.target.matches('[data-remove-requirement]')) { event.target.closest('[data-requirement-row]').remove(); renumberRequirements(); } });
+    document.querySelector('[data-add-requirement]').addEventListener('click',() => {
+        if (requirements.children.length >= 50) { document.querySelector('[data-requirement-limit]').textContent = 'Batas 50 persyaratan telah tercapai.'; return; }
+        requirements.append(document.getElementById('requirement-template').content.cloneNode(true)); renumberRequirements();
+    });
+}
