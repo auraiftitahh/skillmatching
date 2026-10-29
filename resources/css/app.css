@@ -230,3 +230,7 @@ textarea { resize:vertical; min-height:112px; }
 .preserve-lines { white-space:pre-line; overflow-wrap:anywhere; }
 @media(max-width:1050px) { .domain-detail-grid { grid-template-columns:1fr; } .domain-detail-aside { position:static; } }
 @media(max-width:480px) { .training-facts { grid-template-columns:1fr; gap:12px; } }
+
+.match-score { font-size:clamp(2.8rem,6vw,4rem); font-weight:750; color:var(--green); line-height:1.2; margin:18px 0; }
+.match-score small { font-size:1rem; color:var(--muted); font-weight:400; }
+.match-meter { width:100%; height:14px; accent-color:var(--green); margin-bottom:14px; }
