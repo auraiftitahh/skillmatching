@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\SkillCatalogController;
 use App\Http\Controllers\Admin\SkillRelationController;
 use App\Http\Controllers\Admin\TrainingPublicationController;
 use App\Http\Controllers\Admin\TrainingReviewController;
+use App\Http\Controllers\Admin\WeightConfigurationController;
 use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\JobCatalogController;
 use App\Http\Controllers\Applicant\ProfileController;
@@ -85,6 +86,8 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::post('/lowongan', [JobVacancyController::class, 'store'])->name('jobs.store');
         Route::get('/lowongan/{job}', [JobVacancyController::class, 'edit'])->whereNumber('job')->name('jobs.edit');
         Route::put('/lowongan/{job}', [JobVacancyController::class, 'update'])->whereNumber('job')->name('jobs.update');
+        Route::get('/bobot', [WeightConfigurationController::class, 'edit'])->name('weights.edit');
+        Route::post('/bobot', [WeightConfigurationController::class, 'store'])->name('weights.store');
         Route::get('/persetujuan-lembaga', [InstitutionReviewController::class, 'index'])->name('institutions.index');
         Route::get('/persetujuan-lembaga/{body}', [InstitutionReviewController::class, 'show'])->whereNumber('body')->name('institutions.show');
         Route::post('/persetujuan-lembaga/{body}/keputusan', [InstitutionReviewController::class, 'decide'])->whereNumber('body')->name('institutions.decide');
