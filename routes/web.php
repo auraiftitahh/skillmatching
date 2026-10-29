@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\TrainingReviewController;
 use App\Http\Controllers\Admin\WeightConfigurationController;
 use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\JobCatalogController;
+use App\Http\Controllers\Applicant\MatchingController;
 use App\Http\Controllers\Applicant\ProfileController;
 use App\Http\Controllers\Applicant\SkillController;
 use App\Http\Controllers\Applicant\SkillSuggestionController;
@@ -61,6 +62,8 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::get('/lowongan/{job}', [JobCatalogController::class, 'show'])->whereNumber('job')->name('jobs.show');
         Route::post('/lowongan/{job}/simpan', [JobCatalogController::class, 'save'])->whereNumber('job')->name('jobs.save');
         Route::delete('/lowongan/{job}/simpan', [JobCatalogController::class, 'unsave'])->whereNumber('job')->name('jobs.unsave');
+        Route::get('/kecocokan', [MatchingController::class, 'index'])->name('matching.index');
+        Route::get('/lowongan/{job}/kecocokan', [MatchingController::class, 'show'])->whereNumber('job')->name('matching.show');
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
         Route::get('/riwayat', [ExperienceController::class, 'index'])->name('experiences.index');
