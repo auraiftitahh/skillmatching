@@ -65,4 +65,16 @@ final class MatchingService
 
         return $results;
     }
+
+    public function projectedLevels(array $actual, array $trainingIds): array
+    {
+        abort_unless(count($trainingIds) >= 1 && count($trainingIds) <= 3 && count(array_unique($trainingIds)) === count($trainingIds), 422, 'Pilih satu sampai tiga pelatihan yang berbeda.');
+        abort_unless(Publication::trainings()->whereIn('trainings.id', $trainingIds)->count() === count($trainingIds), 404, 'Pelatihan tidak tersedia untuk simulasi.');
+        $hypothetical = $actual;
+        foreach (DB::table('training_skills')->whereIn('training_id', $trainingIds)->get() as $outcome) {
+            $hypothetical[$outcome->skill_id] = max((int) ($hypothetical[$outcome->skill_id] ?? 0), (int) $outcome->target_level);
+        }
+
+        return $hypothetical;
+    }
 }

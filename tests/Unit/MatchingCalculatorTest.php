@@ -34,4 +34,33 @@ class MatchingCalculatorTest extends TestCase
         $this->assertTrue($r['items'][1]['related']);
         $this->assertSame(2, $r['items'][1]['gap']);
     }
+
+    public function test_additional_direct_ability_never_reduces_best_related_score_for_fixed_requirements(): void
+    {
+        foreach ([0.0, 0.5, 1.0] as $factor) {
+            foreach (range(1, 4) as $target) {
+                foreach (range(0, 4) as $related) {
+                    $requirements = [['skill_id' => 1, 'skill' => 'Tujuan', 'target' => $target, 'importance' => 'required', 'weight' => 3, 'is_override' => false]];
+                    $config = ['required_weight' => 3, 'preferred_weight' => 1, 'related_factor' => $factor];
+                    $previous = 0.0;
+                    foreach (range(0, 4) as $direct) {
+                        $score = MatchingCalculator::calculate($requirements, [1 => $direct], [1 => [$related]], $config)['score'];
+                        $this->assertGreaterThanOrEqual($previous, $score);
+                        $this->assertGreaterThanOrEqual(0, $score);
+                        $this->assertLessThanOrEqual(100, $score);
+                        $previous = $score;
+                    }
+                }
+            }
+        }
+    }
+
+    public function test_empty_requirements_and_levels_have_bounded_zero_score(): void
+    {
+        $config = ['required_weight' => 3, 'preferred_weight' => 1, 'related_factor' => 0.5];
+        $result = MatchingCalculator::calculate([], [], [], $config);
+        $this->assertSame(0.0, $result['score']);
+        $this->assertSame(0, $result['display_score']);
+        $this->assertSame([], $result['items']);
+    }
 }
