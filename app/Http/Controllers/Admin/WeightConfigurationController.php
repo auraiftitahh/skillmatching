@@ -30,4 +30,14 @@ class WeightConfigurationController extends Controller
 
         return redirect()->route('admin.weights.edit')->with('success', 'Versi bobot baru diterbitkan. Versi sebelumnya tetap tersimpan.');
     }
+
+    public function history(Request $r): View
+    {
+        return view('admin.weights.history', [...WorkspacePage::data($r, 'admin', 'bobot', 'Riwayat Versi Bobot', route('admin.weights.edit')), 'configurations' => WeightConfiguration::with('author')->latest('version')->paginate(12), 'activeId' => WeightConfiguration::current()->id]);
+    }
+
+    public function show(Request $r, WeightConfiguration $configuration): View
+    {
+        return view('admin.weights.show', [...WorkspacePage::data($r, 'admin', 'bobot', 'Detail Versi Bobot', route('admin.weights.history')), 'configuration' => $configuration->load('author'), 'activeId' => WeightConfiguration::current()->id]);
+    }
 }
