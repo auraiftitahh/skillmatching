@@ -34,7 +34,7 @@ class TrainingCatalogController extends Controller
         }
 
         return view('applicant.trainings.index', [...WorkspacePage::data($r, 'pelamar', 'pelatihan', 'Katalog Pelatihan'),
-            'trainings' => $query->orderBy('title')->paginate(9)->withQueryString(), 'filters' => $filters, 'skills' => Skill::where('is_active', true)->orderBy('name')->get()]);
+            'targetJob' => ! empty($filters['job_id']) ? Publication::jobs()->findOrFail($filters['job_id']) : null, 'trainings' => $query->orderBy('title')->paginate(9)->withQueryString(), 'filters' => $filters, 'skills' => Skill::where('is_active', true)->orderBy('name')->get()]);
     }
 
     public function show(Request $r, int $training): View
@@ -46,11 +46,16 @@ class TrainingCatalogController extends Controller
             'prerequisites' => Training::whereIn('id', DB::table('training_prerequisites')->where('training_id', $record->id)->select('prerequisite_id'))->orderBy('title')->get(),
             'completedIds' => DB::table('training_enrollments')->where('user_id', $r->user()->id)->where('status', 'completed')->pluck('training_id')->all(),
             'availablePrerequisiteIds' => Publication::trainings()->whereIn('trainings.id', DB::table('training_prerequisites')->where('training_id', $record->id)->select('prerequisite_id'))->pluck('trainings.id')->all(),
-            'training' => $record, 'own' => UserSkill::where('user_id', $r->user()->id)->pluck('level', 'skill_id'), 'levels' => SkillController::LEVELS]);
+            'targetJob' => ! empty($filters['job_id']) ? Publication::jobs()->findOrFail($filters['job_id']) : null, 'training' => $record, 'own' => UserSkill::where('user_id', $r->user()->id)->pluck('level', 'skill_id'), 'levels' => SkillController::LEVELS]);
     }
 
     private function filters(Request $r): array
     {
-        return $r->validate(['q' => 'nullable|string|max:100', 'mode' => ['nullable', Rule::in(['online', 'offline', 'hybrid'])], 'max_cost' => 'nullable|numeric|min:0|max:999999999', 'skill_id' => ['nullable', 'integer', Rule::exists('skills', 'id')->where('is_active', true)]]);
+        $filters = $r->validate(['job_id' => 'nullable|integer|min:1', 'q' => 'nullable|string|max:100', 'mode' => ['nullable', Rule::in(['online', 'offline', 'hybrid'])], 'max_cost' => 'nullable|numeric|min:0|max:999999999', 'skill_id' => ['nullable', 'integer', Rule::exists('skills', 'id')->where('is_active', true)]]);
+        if (! empty($filters['job_id'])) {
+            Publication::jobs()->findOrFail($filters['job_id']);
+        }
+
+        return $filters;
     }
 }

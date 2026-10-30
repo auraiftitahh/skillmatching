@@ -234,3 +234,7 @@ textarea { resize:vertical; min-height:112px; }
 .match-score { font-size:clamp(2.8rem,6vw,4rem); font-weight:750; color:var(--green); line-height:1.2; margin:18px 0; }
 .match-score small { font-size:1rem; color:var(--muted); font-weight:400; }
 .match-meter { width:100%; height:14px; accent-color:var(--green); margin-bottom:14px; }
+
+.target-context { display:flex; justify-content:space-between; align-items:center; gap:18px; flex-wrap:wrap; }
+.target-context h2 { margin:4px 0; }
+.target-context p { margin:0; }
