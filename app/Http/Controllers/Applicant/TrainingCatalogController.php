@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Skill;
 use App\Models\Training;
 use App\Models\UserSkill;
+use App\Services\TrainingRecommendations;
 use App\Support\Publication;
 use App\Support\WorkspacePage;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -33,8 +35,17 @@ class TrainingCatalogController extends Controller
             $query->whereHas('skills', fn ($q) => $q->where('skills.id', $filters['skill_id']));
         }
 
+        $targetJob = ! empty($filters['job_id']) ? Publication::jobs()->findOrFail($filters['job_id']) : null;
+        if ($targetJob) {
+            $ranked = app(TrainingRecommendations::class)->rank($r->user(), $targetJob, $query->get());
+            $page = LengthAwarePaginator::resolveCurrentPage();
+            $trainings = new LengthAwarePaginator($ranked->forPage($page, 9)->values(), $ranked->count(), 9, $page, ['path' => $r->url(), 'query' => $r->query()]);
+        } else {
+            $trainings = $query->orderBy('title')->paginate(9)->withQueryString();
+        }
+
         return view('applicant.trainings.index', [...WorkspacePage::data($r, 'pelamar', 'pelatihan', 'Katalog Pelatihan'),
-            'targetJob' => ! empty($filters['job_id']) ? Publication::jobs()->findOrFail($filters['job_id']) : null, 'trainings' => $query->orderBy('title')->paginate(9)->withQueryString(), 'filters' => $filters, 'skills' => Skill::where('is_active', true)->orderBy('name')->get()]);
+            'targetJob' => $targetJob, 'trainings' => $trainings, 'filters' => $filters, 'skills' => Skill::where('is_active', true)->orderBy('name')->get()]);
     }
 
     public function show(Request $r, int $training): View
