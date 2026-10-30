@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\WeightConfigurationController;
 use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\GapController;
 use App\Http\Controllers\Applicant\JobCatalogController;
+use App\Http\Controllers\Applicant\LearningPlanController;
 use App\Http\Controllers\Applicant\MatchingController;
 use App\Http\Controllers\Applicant\ProfileController;
 use App\Http\Controllers\Applicant\SkillController;
@@ -54,6 +55,9 @@ Route::get('/email/verified', [EmailVerificationController::class, 'complete'])-
 Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function () {
     Route::prefix('pelamar')->name('applicant.')->middleware('workspace.role:pelamar')->group(function () {
+        Route::get('/rencana-belajar', [LearningPlanController::class, 'index'])->name('plans.index');
+        Route::post('/rencana-belajar', [LearningPlanController::class, 'store'])->name('plans.store');
+        Route::delete('/rencana-belajar/{enrollment}', [LearningPlanController::class, 'destroy'])->whereNumber('enrollment')->name('plans.destroy');
         Route::get('/skill/saran', [SkillSuggestionController::class, 'index'])->name('skills.suggestions');
         Route::get('/skill', [SkillController::class, 'edit'])->name('skills.edit');
         Route::put('/skill', [SkillController::class, 'update'])->name('skills.update');
