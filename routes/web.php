@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SkillRelationController;
 use App\Http\Controllers\Admin\TrainingPublicationController;
 use App\Http\Controllers\Admin\TrainingReviewController;
 use App\Http\Controllers\Admin\WeightConfigurationController;
+use App\Http\Controllers\Applicant\DashboardController;
 use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\GapController;
 use App\Http\Controllers\Applicant\JobCatalogController;
@@ -56,6 +57,7 @@ Route::get('/email/verified', [EmailVerificationController::class, 'complete'])-
 Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function () {
     Route::prefix('pelamar')->name('applicant.')->middleware('workspace.role:pelamar')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/simulasi', [SimulationController::class, 'create'])->name('simulations.create');
         Route::post('/simulasi', [SimulationController::class, 'calculate'])->name('simulations.calculate');
         Route::get('/rencana-belajar', [LearningPlanController::class, 'index'])->name('plans.index');
