@@ -238,3 +238,5 @@ textarea { resize:vertical; min-height:112px; }
 .target-context { display:flex; justify-content:space-between; align-items:center; gap:18px; flex-wrap:wrap; }
 .target-context h2 { margin:4px 0; }
 .target-context p { margin:0; }
+
+.simulation-comparison{display:flex;align-items:center;justify-content:center;gap:clamp(1rem,5vw,4rem);padding:2rem 0;flex-wrap:wrap;text-align:center}.simulation-comparison strong{display:block;font-size:clamp(2.5rem,8vw,5.5rem);line-height:1.2}.simulation-comparison small{font-size:1rem}.simulation-before{color:#737f79}.simulation-after{color:#116c52}

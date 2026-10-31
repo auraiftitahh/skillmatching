@@ -5,7 +5,7 @@
 @php($training=$trainings->get($record->training_id))
 <article class="card"><span class="badge">{{ ['planned'=>'Direncanakan','in_progress'=>'Sedang diikuti','waiting_confirmation'=>'Menunggu konfirmasi','completed'=>'Selesai','rejected'=>'Belum disetujui'][$record->status]??'Riwayat pelatihan' }}</span><h2>{{ $training?->title??'Pelatihan tidak tersedia' }}</h2><p>Capaian tersimpan dari versi {{ $record->training_version }} saat rencana dibuat.</p>
 @if(in_array($record->training_id,$available))
-<a class="button button-outline" href="{{ route('applicant.trainings.show',['training'=>$record->training_id,'job_id'=>$targetJob?->id]) }}">Lihat detail dan urutan prasyarat</a>
+<a class="button button-outline" href="{{ route('applicant.trainings.show',['training'=>$record->training_id,'job_id'=>$targetJob?->id]) }}">Lihat detail dan urutan prasyarat</a><a class="button button-outline" href="{{ route('applicant.simulations.create',['training_id'=>$record->training_id,'job_id'=>$targetJob?->id]) }}">Simulasikan pelatihan ini</a>
 @if(!\App\Support\Publication::prerequisitesMet(auth()->id(),$record->training_id))<p class="form-hint">Selesaikan prasyarat pada urutan belajar lebih dahulu. Menambahkan prasyarat ke rencana belum berarti lulus.</p>@endif
 @else<p class="notice notice-warning">Pelatihan saat ini tidak tersedia. Rencana dan capaian yang tersimpan tetap dipertahankan.</p>@endif
 @if($record->status==='planned')<form method="post" action="{{ route('applicant.plans.destroy',$record->id) }}">@csrf
