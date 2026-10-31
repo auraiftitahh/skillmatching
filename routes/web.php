@@ -86,6 +86,7 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::delete('/riwayat/{experience}', [ExperienceController::class, 'destroy'])->whereNumber('experience')->name('experiences.destroy');
     });
     Route::prefix('admin')->name('admin.')->middleware('workspace.role:admin')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/jabatan', [JobTaxonomyController::class, 'index'])->name('taxonomies.index');
         Route::get('/jabatan/tambah', [JobTaxonomyController::class, 'create'])->name('taxonomies.create');
         Route::post('/jabatan', [JobTaxonomyController::class, 'store'])->name('taxonomies.store');
