@@ -16,6 +16,7 @@ use App\Http\Controllers\Applicant\JobCatalogController;
 use App\Http\Controllers\Applicant\LearningPlanController;
 use App\Http\Controllers\Applicant\MatchingController;
 use App\Http\Controllers\Applicant\ProfileController;
+use App\Http\Controllers\Applicant\SimulationController;
 use App\Http\Controllers\Applicant\SkillController;
 use App\Http\Controllers\Applicant\SkillSuggestionController;
 use App\Http\Controllers\Applicant\TrainingCatalogController;
@@ -55,6 +56,8 @@ Route::get('/email/verified', [EmailVerificationController::class, 'complete'])-
 Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function () {
     Route::prefix('pelamar')->name('applicant.')->middleware('workspace.role:pelamar')->group(function () {
+        Route::get('/simulasi', [SimulationController::class, 'create'])->name('simulations.create');
+        Route::post('/simulasi', [SimulationController::class, 'calculate'])->name('simulations.calculate');
         Route::get('/rencana-belajar', [LearningPlanController::class, 'index'])->name('plans.index');
         Route::post('/rencana-belajar', [LearningPlanController::class, 'store'])->name('plans.store');
         Route::delete('/rencana-belajar/{enrollment}', [LearningPlanController::class, 'destroy'])->whereNumber('enrollment')->name('plans.destroy');
