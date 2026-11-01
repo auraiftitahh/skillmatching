@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\InstitutionReviewController;
 use App\Http\Controllers\Admin\JobPublicationController;
 use App\Http\Controllers\Admin\JobTaxonomyController;
@@ -87,6 +88,7 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
     });
     Route::prefix('admin')->name('admin.')->middleware('workspace.role:admin')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/aktivitas', [ActivityController::class, 'index'])->name('activity.index');
         Route::get('/jabatan', [JobTaxonomyController::class, 'index'])->name('taxonomies.index');
         Route::get('/jabatan/tambah', [JobTaxonomyController::class, 'create'])->name('taxonomies.create');
         Route::post('/jabatan', [JobTaxonomyController::class, 'store'])->name('taxonomies.store');
