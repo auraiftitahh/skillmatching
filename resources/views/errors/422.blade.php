@@ -1,0 +1,1 @@
+<x-layouts.auth title="Tindakan belum dapat dilakukan"><p class="eyebrow">Informasi layanan</p><h1>Tindakan belum dapat dilakukan</h1><p class="intro">Periksa kembali pilihan dan ketentuan sebelum melanjutkan.</p><p>{{ $exception->getMessage() }}</p><a class="button button-primary full-width" href="{{ url('/') }}">Kembali ke ruang saya</a></x-layouts.auth>

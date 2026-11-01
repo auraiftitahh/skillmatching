@@ -1,4 +1,7 @@
 @props(['pageTitle', 'roleLabel', 'navigation', 'homeUrl', 'backUrl' => null, 'preview' => false, 'userName' => null, 'logoutUrl' => null])
+@php
+    if (!$preview && !$backUrl && !request()->is('*/dashboard')) { $backUrl=$homeUrl; }
+@endphp
 <x-layouts.base :title="$pageTitle">
     <div class="app-shell">
         <aside class="sidebar" aria-label="Panel navigasi">
@@ -29,6 +32,7 @@
                     @if ($backUrl)<a class="button button-outline" href="{{ $backUrl }}"><x-icon name="arrow" />Kembali</a>@endif
                 </div>
                 @if ($preview)<x-alert>Pratinjau antarmuka. Navigasi ini belum menggunakan akun atau data operasional.</x-alert>@endif
+                @if (session('status'))<x-alert type="success">{{ session('status') }}</x-alert>@endif
                 @if (session('success'))<x-alert type="success">{{ session('success') }}</x-alert>@endif
                 @if ($errors->any())
                     <x-alert type="error"><p>Periksa kembali isian Anda.</p><ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></x-alert>

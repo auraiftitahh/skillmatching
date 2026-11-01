@@ -12,18 +12,13 @@ use Illuminate\Http\Request;
 
 class WorkspaceController extends Controller
 {
-    public function show(Request $request, string $role, string $page = 'dashboard'): View
+    public function show(Request $request, string $role, string $page = 'dashboard'): RedirectResponse
     {
-        abort_unless(isset(WorkspaceNavigation::PAGES[$role][$page]), 404);
-
-        return view('workspace.placeholder', [
-            'roleLabel' => WorkspaceNavigation::label($role),
-            'pageTitle' => WorkspaceNavigation::PAGES[$role][$page][0],
-            'navigation' => WorkspaceNavigation::items($role, $page),
-            'homeUrl' => route('workspace', ['role' => $role, 'page' => 'dashboard']),
-            'backUrl' => $page === 'dashboard' ? null : route('workspace', ['role' => $role, 'page' => 'dashboard']),
-            'userName' => $request->user()->name,
-        ]);
+        abort_unless(in_array($page, WorkspaceNavigation::OPERATIONAL[$role], true), 404);
+        if ($page === 'dashboard') {
+            return redirect('/'.$role.'/dashboard');
+        }
+        abort(404);
     }
 
     public function institutionStatus(Request $request): View|RedirectResponse
