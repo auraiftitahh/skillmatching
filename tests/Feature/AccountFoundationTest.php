@@ -47,7 +47,7 @@ class AccountFoundationTest extends TestCase
     public function test_seed_creates_three_roles_and_independent_email_and_institution_states_without_sending_mail(): void
     {
         $this->seed(DatabaseSeeder::class);
-        $this->assertDatabaseCount('users', 9);
+        $this->assertDatabaseCount('users', 14);
         $this->assertDatabaseCount('certification_bodies', 5);
         $this->assertDatabaseHas('users', ['email' => 'admin@example.test', 'role' => 'admin']);
         $this->assertDatabaseHas('users', ['email' => 'nonaktif@example.test', 'is_active' => false]);
@@ -69,7 +69,7 @@ class AccountFoundationTest extends TestCase
         $user->update(['name' => 'Nama Diubah', 'password' => 'ChangedTesting123!', 'is_active' => false]);
         $user->certificationBody->update(['name' => 'Lembaga Diubah', 'status' => CertificationBody::STATUS_DISABLED]);
         $this->seed(DatabaseSeeder::class);
-        $this->assertDatabaseCount('users', 9);
+        $this->assertDatabaseCount('users', 14);
         $this->assertDatabaseCount('certification_bodies', 5);
         $this->assertSame('Nama Diubah', $user->fresh()->name);
         $this->assertFalse($user->fresh()->is_active);
