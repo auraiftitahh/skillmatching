@@ -45,7 +45,7 @@ class WorkspaceNavigation
     public const OPERATIONAL = [
         'pelamar' => ['dashboard', 'profil', 'riwayat', 'skill', 'lowongan', 'pelatihan', 'rencana-belajar', 'simulasi'],
         'admin' => ['dashboard', 'akun', 'persetujuan-lembaga', 'pengajuan-pelatihan', 'skill', 'jabatan', 'lowongan', 'bobot', 'aktivitas'],
-        'sertifikasi' => ['dashboard', 'status-akun', 'pengajuan', 'pelatihan'],
+        'sertifikasi' => ['dashboard', 'status-akun', 'pengajuan', 'pelatihan', 'peserta'],
     ];
 
     public static function label(string $role): string
