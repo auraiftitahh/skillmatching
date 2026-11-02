@@ -14,6 +14,30 @@ class LearningPlanTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_owner_starts_and_submits_completion_without_receiving_skills_yet(): void
+    {
+        $this->withoutVite();
+        $user = User::factory()->create();
+        $course = Training::factory()->published()->create();
+        $id = app(LearningPlans::class)->add($user, $course->id);
+        $start = route('applicant.plans.start', $id);
+        $submit = route('applicant.plans.submit-completion', $id);
+
+        $this->actingAs(User::factory()->create())->post($start)->assertNotFound();
+        $this->actingAs($user)->post($submit)->assertUnprocessable();
+        $this->get(route('applicant.plans.index'))->assertOk()->assertSee('Mulai belajar');
+        $this->post($start)->assertRedirect(route('applicant.plans.index'));
+        $this->assertNotNull(DB::table('training_enrollments')->find($id)->started_at);
+        $this->get(route('applicant.plans.index'))->assertOk()->assertSee('Ajukan penyelesaian');
+        $this->post($submit)->assertRedirect(route('applicant.plans.index'));
+        $submitted = DB::table('training_enrollments')->find($id);
+        $this->assertSame('waiting_confirmation', $submitted->status);
+        $this->assertNotNull($submitted->submitted_at);
+        $this->post($submit)->assertRedirect();
+        $this->assertSame($submitted->submitted_at, DB::table('training_enrollments')->find($id)->submitted_at);
+        $this->assertDatabaseCount('user_skills', 0);
+    }
+
     public function test_plans_are_idempotent_capped_and_do_not_change_skills(): void
     {
         $this->withoutVite();
@@ -57,6 +81,6 @@ class LearningPlanTest extends TestCase
         DB::table('training_prerequisites')->insert(['training_id' => $course->id, 'prerequisite_id' => $prereq->id]);
         $this->actingAs($user)->post(route('applicant.plans.store'), ['training_id' => $course->id])->assertUnprocessable();
         $this->post(route('applicant.plans.store'), ['training_id' => $prereq->id])->assertNotFound();
-        $this->assertDatabaseCount('training_enrollments',0);
+        $this->assertDatabaseCount('training_enrollments', 0);
     }
 }

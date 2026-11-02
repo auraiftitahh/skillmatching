@@ -30,6 +30,36 @@ final class LearningPlans
         }, 3);
     }
 
+    public function start(User $user, int $id): void
+    {
+        $this->advance($user, $id, 'planned', 'in_progress', 'started_at');
+    }
+
+    public function submitCompletion(User $user, int $id): void
+    {
+        $this->advance($user, $id, 'in_progress', 'waiting_confirmation', 'submitted_at');
+    }
+
+    private function advance(User $user, int $id, string $from, string $to, string $timestamp): void
+    {
+        DB::transaction(function () use ($user, $id, $from, $to, $timestamp): void {
+            User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+            $record = DB::table('training_enrollments')->where('user_id', $user->id)->where('id', $id)->lockForUpdate()->first();
+            abort_unless($record, 404);
+            if ($record->status === $to) {
+                return;
+            }
+            abort_unless($record->status === $from, 422, 'Tindakan ini tidak sesuai dengan status pelatihan.');
+            abort_unless(Publication::trainings()->whereKey($record->training_id)->exists(), 422, 'Pelatihan sedang tidak tersedia.');
+            abort_unless(Publication::prerequisitesMet($user->id, $record->training_id), 422, 'Selesaikan prasyarat pelatihan terlebih dahulu.');
+            DB::table('training_enrollments')->where('id', $id)->update([
+                'status' => $to,
+                $timestamp => now(),
+                'updated_at' => now(),
+            ]);
+        }, 3);
+    }
+
     public function remove(User $user, int $id): void
     {
         DB::transaction(function () use ($user, $id) {

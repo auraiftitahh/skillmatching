@@ -41,10 +41,24 @@ class LearningPlanController extends Controller
         return redirect()->route('applicant.plans.index', array_filter(['job_id' => $data['job_id'] ?? null]))->with('status', 'Pelatihan tersimpan dalam rencana belajar. Profil kemampuan Anda belum berubah.');
     }
 
+    public function start(Request $r, int $enrollment, LearningPlans $plans): RedirectResponse
+    {
+        $plans->start($r->user(), $enrollment);
+
+        return redirect()->route('applicant.plans.index')->with('status', 'Status pelatihan menjadi sedang diikuti.');
+    }
+
+    public function submitCompletion(Request $r, int $enrollment, LearningPlans $plans): RedirectResponse
+    {
+        $plans->submitCompletion($r->user(), $enrollment);
+
+        return redirect()->route('applicant.plans.index')->with('status', 'Penyelesaian diajukan. Tunggu konfirmasi penyelenggara.');
+    }
+
     public function destroy(Request $r, int $enrollment, LearningPlans $plans): RedirectResponse
     {
         $plans->remove($r->user(), $enrollment);
 
-        return redirect()->route('applicant.plans.index')->with('status','Rencana belajar dihapus.');
+        return redirect()->route('applicant.plans.index')->with('status', 'Rencana belajar dihapus.');
     }
 }
