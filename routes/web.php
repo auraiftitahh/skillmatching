@@ -63,6 +63,8 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::post('/simulasi', [SimulationController::class, 'calculate'])->name('simulations.calculate');
         Route::get('/rencana-belajar', [LearningPlanController::class, 'index'])->name('plans.index');
         Route::post('/rencana-belajar', [LearningPlanController::class, 'store'])->name('plans.store');
+        Route::post('/rencana-belajar/{enrollment}/mulai', [LearningPlanController::class, 'start'])->whereNumber('enrollment')->name('plans.start');
+        Route::post('/rencana-belajar/{enrollment}/penyelesaian', [LearningPlanController::class, 'submitCompletion'])->whereNumber('enrollment')->name('plans.submit-completion');
         Route::delete('/rencana-belajar/{enrollment}', [LearningPlanController::class, 'destroy'])->whereNumber('enrollment')->name('plans.destroy');
         Route::get('/skill/saran', [SkillSuggestionController::class, 'index'])->name('skills.suggestions');
         Route::get('/skill', [SkillController::class, 'edit'])->name('skills.edit');
