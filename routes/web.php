@@ -67,6 +67,8 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::post('/rencana-belajar', [LearningPlanController::class, 'store'])->name('plans.store');
         Route::get('/bukti-kompetensi', [ExternalEvidenceController::class, 'index'])->name('evidence.index');
         Route::post('/bukti-kompetensi', [ExternalEvidenceController::class, 'store'])->name('evidence.store');
+        Route::patch('/bukti-kompetensi/{evidence}', [ExternalEvidenceController::class, 'update'])->whereNumber('evidence')->name('evidence.update');
+        Route::post('/bukti-kompetensi/{evidence}/tarik', [ExternalEvidenceController::class, 'withdraw'])->whereNumber('evidence')->name('evidence.withdraw');
         Route::get('/bukti-kompetensi/{evidence}/dokumen', [ExternalEvidenceController::class, 'download'])->whereNumber('evidence')->name('evidence.download');
         Route::post('/rencana-belajar/{enrollment}/mulai', [LearningPlanController::class, 'start'])->whereNumber('enrollment')->name('plans.start');
         Route::post('/rencana-belajar/{enrollment}/penyelesaian', [LearningPlanController::class, 'submitCompletion'])->whereNumber('enrollment')->name('plans.submit-completion');
