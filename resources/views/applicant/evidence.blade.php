@@ -16,6 +16,22 @@
                 <p>{{ $record->issuer_name }} · {{ $record->skill }} · Level {{ $record->level }}</p>
                 @if ($record->reason)<p>{{ $record->reason }}</p>@endif
                 <a class="button button-outline" href="{{ route('applicant.evidence.download', $record->id) }}">Unduh dokumen</a>
+                @if (in_array($record->status, ['unverified', 'cancelled'], true))
+                    <details>
+                        <summary>Ubah bukti atau hubungkan penerbit</summary>
+                        <form method="post" action="{{ route('applicant.evidence.update', $record->id) }}" enctype="multipart/form-data" class="form-grid">
+                            @csrf
+                            @method('PATCH')
+                            @include('applicant.evidence-fields', ['record' => $record])
+                            <button class="button button-primary">Simpan perubahan</button>
+                        </form>
+                    </details>
+                @elseif ($record->status === 'pending')
+                    <form method="post" action="{{ route('applicant.evidence.withdraw', $record->id) }}">
+                        @csrf
+                        <button class="button button-outline">Tarik pengajuan</button>
+                    </form>
+                @endif
             </article>
         @empty
             <section class="card small-empty"><h2>Belum ada bukti tersimpan</h2></section>

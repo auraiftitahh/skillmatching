@@ -57,6 +57,49 @@ class ExternalEvidenceController extends Controller
         return Storage::disk('local')->download($record->file_path, 'bukti-'.$record->id.'.'.pathinfo($record->file_path, PATHINFO_EXTENSION), ['X-Content-Type-Options' => 'nosniff']);
     }
 
+    public function update(Request $request, int $evidence): RedirectResponse
+    {
+        $data = $this->validatedEvidence($request, false);
+        $disk = Storage::disk('local');
+        $newPath = $request->file('file')?->store('external-certificates', 'local');
+        abort_if($newPath === false, 500, 'Dokumen belum dapat disimpan.');
+        try {
+            $oldPath = DB::transaction(function () use ($request, $evidence, $data, $disk, $newPath): string {
+                $query = DB::table('external_certificates')->where('user_id', $request->user()->id)->where('id', $evidence);
+                $record = $query->lockForUpdate()->first();
+                abort_unless($record, 404);
+                abort_unless(in_array($record->status, ['unverified', 'cancelled'], true), 422, 'Bukti ini tidak dapat diubah.');
+                $path = $newPath ?? $record->file_path;
+                abort_unless($disk->exists($path), 422, 'Unggah dokumen pengganti terlebih dahulu.');
+                $query->update([...$data, 'file_path' => $path, 'updated_at' => now()]);
+
+                return $record->file_path;
+            }, 3);
+        } catch (Throwable $error) {
+            if ($newPath) {
+                $disk->delete($newPath);
+            }
+            throw $error;
+        }
+        if ($newPath) {
+            $disk->delete($oldPath);
+        }
+
+        return redirect()->route('applicant.evidence.index')->with('status', 'Perubahan bukti tersimpan.');
+    }
+
+    public function withdraw(Request $request, int $evidence): RedirectResponse
+    {
+        $query = DB::table('external_certificates')->where('user_id', $request->user()->id)->where('id', $evidence);
+        abort_unless((clone $query)->exists(), 404);
+        $updated = $query->where('status', 'pending')->update([
+            'status' => 'cancelled', 'certification_body_id' => null, 'updated_at' => now(),
+        ]);
+        abort_unless($updated, 422, 'Hanya pengajuan yang masih menunggu pemeriksaan dapat ditarik.');
+
+        return redirect()->route('applicant.evidence.index')->with('status', 'Pengajuan ditarik. Bukti tersimpan secara pribadi.');
+    }
+
     private function validatedEvidence(Request $request, bool $fileRequired): array
     {
         $data = $request->validate([
