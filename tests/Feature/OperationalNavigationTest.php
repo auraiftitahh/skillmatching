@@ -30,8 +30,8 @@ class OperationalNavigationTest extends TestCase
     public function test_unavailable_features_are_not_advertised_and_direct_access_is_clear(): void
     {
         $this->withoutVite();
-        $this->actingAs(User::factory()->create())->get('/pelamar/dashboard')->assertDontSee('Bukti Kompetensi')->assertDontSee('/pelamar/pengaturan');
-        $this->get('/pelamar/bukti-kompetensi')->assertNotFound()->assertSee('Halaman tidak tersedia');
+        $this->actingAs(User::factory()->create())->get('/pelamar/dashboard')->assertSee('Bukti Kompetensi')->assertDontSee('/pelamar/pengaturan');
+        $this->get('/pelamar/pengaturan')->assertNotFound()->assertSee('Halaman tidak tersedia');
         $this->get('/pelamar')->assertRedirect('/pelamar/dashboard');
     }
 }
