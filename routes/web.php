@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\TrainingReviewController;
 use App\Http\Controllers\Admin\WeightConfigurationController;
 use App\Http\Controllers\Applicant\DashboardController;
 use App\Http\Controllers\Applicant\ExperienceController;
+use App\Http\Controllers\Applicant\ExternalEvidenceController;
 use App\Http\Controllers\Applicant\GapController;
 use App\Http\Controllers\Applicant\JobCatalogController;
 use App\Http\Controllers\Applicant\LearningPlanController;
@@ -64,6 +65,9 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::post('/simulasi', [SimulationController::class, 'calculate'])->name('simulations.calculate');
         Route::get('/rencana-belajar', [LearningPlanController::class, 'index'])->name('plans.index');
         Route::post('/rencana-belajar', [LearningPlanController::class, 'store'])->name('plans.store');
+        Route::get('/bukti-kompetensi', [ExternalEvidenceController::class, 'index'])->name('evidence.index');
+        Route::post('/bukti-kompetensi', [ExternalEvidenceController::class, 'store'])->name('evidence.store');
+        Route::get('/bukti-kompetensi/{evidence}/dokumen', [ExternalEvidenceController::class, 'download'])->whereNumber('evidence')->name('evidence.download');
         Route::post('/rencana-belajar/{enrollment}/mulai', [LearningPlanController::class, 'start'])->whereNumber('enrollment')->name('plans.start');
         Route::post('/rencana-belajar/{enrollment}/penyelesaian', [LearningPlanController::class, 'submitCompletion'])->whereNumber('enrollment')->name('plans.submit-completion');
         Route::delete('/rencana-belajar/{enrollment}', [LearningPlanController::class, 'destroy'])->whereNumber('enrollment')->name('plans.destroy');
