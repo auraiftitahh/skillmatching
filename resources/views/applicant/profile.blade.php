@@ -13,4 +13,16 @@
             <button type="submit" class="button button-primary" data-pending-label="Menyimpan profil…">Simpan profil</button><p class="form-hint" aria-live="polite" data-pending-status></p>
         </form>
     </section><aside class="card profile-summary"><span class="empty-icon"><x-icon name="user" /></span><h2>{{ $user->name }}</h2><p class="account-email">{{ $user->email }}</p><span class="badge">Email terverifikasi</span><dl class="account-facts"><div><dt>Domisili</dt><dd>{{ $user->domicile ?: 'Belum diisi' }}</dd></div><div><dt>Status pekerjaan</dt><dd>{{ \App\Models\User::EMPLOYMENT_STATUSES[$user->employment_status] ?? 'Belum diisi' }}</dd></div></dl><a class="button button-outline full-width" href="{{ route('applicant.experiences.index') }}">Kelola riwayat pengalaman</a></aside></div>
+    <section class="card">
+        <h2>Ubah kata sandi</h2>
+        <p>Gunakan minimal 12 karakter. Setelah disimpan, masuk kembali dengan kata sandi baru.</p>
+        <form method="post" action="{{ route('applicant.profile.password') }}" data-pending-form>
+            @csrf
+            @method('PATCH')
+            <x-password-field name="current_password" label="Kata sandi saat ini" autocomplete="current-password" />
+            <x-password-field name="password" label="Kata sandi baru" />
+            <x-password-field name="password_confirmation" label="Ulangi kata sandi baru" />
+            <button type="submit" class="button button-primary" data-pending-label="Menyimpan kata sandi…">Ubah kata sandi</button>
+        </form>
+    </section>
 </x-layouts.workspace>

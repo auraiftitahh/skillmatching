@@ -88,6 +88,7 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::get('/lowongan/{job}/gap', [GapController::class, 'show'])->whereNumber('job')->name('gaps.show');
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
+        Route::patch('/profil/kata-sandi', [ProfileController::class, 'updatePassword'])->middleware('throttle:6,1')->name('profile.password');
         Route::get('/riwayat', [ExperienceController::class, 'index'])->name('experiences.index');
         Route::get('/riwayat/tambah', [ExperienceController::class, 'create'])->name('experiences.create');
         Route::post('/riwayat', [ExperienceController::class, 'store'])->name('experiences.store');
