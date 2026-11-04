@@ -27,6 +27,7 @@ use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordRecoveryController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\Auth\SessionController;
+use App\Http\Controllers\Institution\EvidenceReviewController;
 use App\Http\Controllers\Institution\ParticipantController;
 use App\Http\Controllers\Institution\TrainingSubmissionController;
 use App\Http\Controllers\LayoutPreviewController;
@@ -137,6 +138,9 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
     Route::prefix('sertifikasi')->name('institution.')->middleware(['workspace.role:sertifikasi', 'institution.active'])->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Institution\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/peserta', [ParticipantController::class, 'index'])->name('participants.index');
+        Route::get('/bukti-eksternal', [EvidenceReviewController::class, 'index'])->name('evidence.index');
+        Route::get('/bukti-eksternal/{evidence}/dokumen', [EvidenceReviewController::class, 'download'])->whereNumber('evidence')->name('evidence.download');
+        Route::post('/bukti-eksternal/{evidence}/keputusan', [EvidenceReviewController::class, 'decide'])->whereNumber('evidence')->name('evidence.decide');
         Route::post('/peserta/{enrollment}/konfirmasi', [ParticipantController::class, 'confirm'])->whereNumber('enrollment')->name('participants.confirm');
         Route::get('/pelatihan', [TrainingSubmissionController::class, 'published'])->name('trainings.index');
         Route::post('/pelatihan/{training}/revisi', [TrainingSubmissionController::class, 'revise'])->whereNumber('training')->name('trainings.revise');
