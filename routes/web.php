@@ -137,6 +137,7 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
     });
     Route::prefix('sertifikasi')->name('institution.')->middleware(['workspace.role:sertifikasi', 'institution.active'])->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Institution\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/riwayat', [App\Http\Controllers\Institution\DashboardController::class, 'history'])->name('history');
         Route::get('/peserta', [ParticipantController::class, 'index'])->name('participants.index');
         Route::get('/bukti-eksternal', [EvidenceReviewController::class, 'index'])->name('evidence.index');
         Route::get('/bukti-eksternal/{evidence}/dokumen', [EvidenceReviewController::class, 'download'])->whereNumber('evidence')->name('evidence.download');
