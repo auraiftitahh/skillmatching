@@ -12,6 +12,24 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    public function history(Request $request): View
+    {
+        $bodyId = $request->user()->certificationBody->id;
+        $reviews = DB::table('training_submissions')->where('certification_body_id', $bodyId)->whereNotNull('reviewed_at')
+            ->selectRaw("'review' as kind, id as record_id, status, review_note as note, reviewed_at as occurred_at");
+        $graduations = DB::table('training_enrollments as enrollments')->join('trainings', 'trainings.id', '=', 'enrollments.training_id')
+            ->where('trainings.certification_body_id', $bodyId)->where('enrollments.status', 'completed')->whereNotNull('enrollments.completed_at')
+            ->selectRaw("'graduation' as kind, enrollments.id as record_id, enrollments.status, trainings.title as note, enrollments.completed_at as occurred_at");
+        $evidence = DB::table('external_certificates')->where('certification_body_id', $bodyId)->whereNotNull('processed_at')
+            ->selectRaw("'evidence' as kind, id as record_id, status, reason as note, processed_at as occurred_at");
+
+        return view('institution.service-history', [
+            ...WorkspacePage::data($request, 'sertifikasi', 'riwayat', 'Riwayat Layanan'),
+            'events' => DB::query()->fromSub($reviews->unionAll($graduations)->unionAll($evidence), 'events')
+                ->latest('occurred_at')->orderBy('kind')->orderByDesc('record_id')->paginate(15),
+        ]);
+    }
+
     public function index(Request $r): View
     {
         $body = $r->user()->certificationBody;
