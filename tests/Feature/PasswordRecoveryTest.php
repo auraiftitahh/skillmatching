@@ -46,6 +46,30 @@ class PasswordRecoveryTest extends TestCase
         return route('password.reset', ['token' => $token, 'email' => $user->email]);
     }
 
+    public function test_applicant_can_change_password_with_current_password_and_sign_in_again(): void
+    {
+        $user = $this->account(['role' => User::ROLE_APPLICANT]);
+        $token = Password::broker()->createToken($user);
+        $url = route('applicant.profile.password');
+        $payload = [
+            'current_password' => 'WrongPasswordTesting!',
+            'password' => 'NewPasswordTesting123!',
+            'password_confirmation' => 'NewPasswordTesting123!',
+        ];
+
+        $this->actingAs($user)->get(route('applicant.profile.edit'))->assertOk()->assertSee($url);
+        $this->patch($url, $payload)->assertSessionHasErrors('current_password');
+        $this->assertTrue(Hash::check('OldPasswordTesting123!', $user->fresh()->password));
+        $payload['current_password'] = 'OldPasswordTesting123!';
+        $this->patch($url, $payload)->assertRedirect(route('login'));
+        $this->assertGuest();
+        $this->assertFalse(Password::broker()->tokenExists($user->fresh(), $token));
+
+        $this->post('/login', ['email' => $user->email, 'password' => $payload['password']])->assertRedirect();
+        $this->assertAuthenticatedAs($user);
+        $this->assertSame($user->only(['email', 'name', 'role']), $user->fresh()->only(['email', 'name', 'role']));
+    }
+
     public function test_login_links_to_forgot_password_and_form_has_csrf(): void
     {
         $this->get('/login')->assertOk()->assertSee(route('password.request'));
