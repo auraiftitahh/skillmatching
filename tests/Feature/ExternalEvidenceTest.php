@@ -15,6 +15,30 @@ class ExternalEvidenceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_rejected_evidence_stays_visible_to_owner_and_never_updates_profile(): void
+    {
+        $this->withoutVite();
+        Storage::fake('local');
+        $applicant = User::factory()->create();
+        $issuer = CertificationBody::factory()->active()->create();
+        $other = CertificationBody::factory()->active()->create();
+        $skill = Skill::factory()->create();
+        $this->actingAs($applicant)->get(route('applicant.evidence.index'))->assertOk()->assertSee('Simpan pribadi');
+        $this->post(route('applicant.evidence.store'), [
+            'title' => 'Bukti demo ditolak', 'certification_body_id' => $issuer->id,
+            'skill_id' => $skill->id, 'level' => 3,
+            'file' => UploadedFile::fake()->create('bukti.pdf', 100, 'application/pdf'),
+        ])->assertRedirect();
+        $id = DB::table('external_certificates')->value('id');
+        $this->actingAs($issuer->user)->get(route('institution.dashboard'))->assertOk()->assertViewHas('pendingEvidence', 1);
+        $this->get(route('institution.evidence.index'))->assertOk()->assertSee('Bukti demo ditolak');
+        $this->post(route('institution.evidence.decide', $id), ['decision' => 'rejected', 'reason' => 'Capaian belum dapat dibuktikan.'])->assertRedirect();
+        $this->get(route('institution.history'))->assertOk()->assertSee('Capaian belum dapat dibuktikan.');
+        $this->actingAs($other->user)->get(route('institution.history'))->assertOk()->assertDontSee('Capaian belum dapat dibuktikan.');
+        $this->actingAs($applicant)->get(route('applicant.evidence.index'))->assertOk()->assertSee('Ditolak')->assertSee('Capaian belum dapat dibuktikan.');
+        $this->assertDatabaseCount('user_skills', 0);
+    }
+
     public function test_only_assigned_issuer_can_review_and_approve_supported_level(): void
     {
         $this->withoutVite();
