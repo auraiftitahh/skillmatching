@@ -10,17 +10,49 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class MatchingController extends Controller
 {
-    public function index(Request $r, MatchingService $matching): View|RedirectResponse
+    public function history(Request $request): View
     {
-        $filters = $r->validate(['q' => 'nullable|string|max:100', 'all' => 'nullable|boolean', 'page' => 'nullable|integer|min:1|max:100000']);
-        $results = $matching->rank($r->user(), (bool) ($filters['all'] ?? false));
+        return view('applicant.matching.history', [
+            ...WorkspacePage::data($request, 'pelamar', 'lowongan', 'Riwayat Rekomendasi', route('applicant.matching.index')),
+            'snapshots' => DB::table('recommendation_histories')->where('user_id', $request->user()->id)->latest('id')->paginate(6),
+        ]);
+    }
+
+    public function saveHistory(Request $request, MatchingService $matching): RedirectResponse
+    {
+        $filters = $request->validate(['q' => 'nullable|string|max:100', 'all' => 'nullable|boolean']);
+        $results = $this->filteredResults($request, $matching, $filters);
+        if ($results === []) {
+            return back()->withErrors(['recommendation' => 'Tidak ada hasil rekomendasi untuk disimpan.']);
+        }
+        DB::table('recommendation_histories')->insert([
+            'user_id' => $request->user()->id,
+            'results' => json_encode($results, JSON_THROW_ON_ERROR),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        return redirect()->route('applicant.matching.history')->with('status', 'Hasil rekomendasi tersimpan.');
+    }
+
+    private function filteredResults(Request $request, MatchingService $matching, array $filters): array
+    {
+        $results = $matching->rank($request->user(), (bool) ($filters['all'] ?? false));
         if (! empty($filters['q'])) {
             $needle = mb_strtolower($filters['q']);
             $results = array_values(array_filter($results, fn ($row) => str_contains(mb_strtolower($row['job'].' '.$row['company']), $needle)));
         }
+
+        return $results;
+    }
+
+    public function index(Request $r, MatchingService $matching): View|RedirectResponse
+    {
+        $filters = $r->validate(['q' => 'nullable|string|max:100', 'all' => 'nullable|boolean', 'page' => 'nullable|integer|min:1|max:100000']);
+        $results = $this->filteredResults($r, $matching, $filters);
         $page = (int) ($filters['page'] ?? 1);
         $last = max(1, (int) ceil(count($results) / 9));
         if ($page > $last) {

@@ -84,6 +84,8 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::post('/lowongan/{job}/simpan', [JobCatalogController::class, 'save'])->whereNumber('job')->name('jobs.save');
         Route::delete('/lowongan/{job}/simpan', [JobCatalogController::class, 'unsave'])->whereNumber('job')->name('jobs.unsave');
         Route::get('/kecocokan', [MatchingController::class, 'index'])->name('matching.index');
+        Route::get('/kecocokan/riwayat', [MatchingController::class, 'history'])->name('matching.history');
+        Route::post('/kecocokan/riwayat', [MatchingController::class, 'saveHistory'])->name('matching.history.store');
         Route::get('/lowongan/{job}/kecocokan', [MatchingController::class, 'show'])->whereNumber('job')->name('matching.show');
         Route::get('/gap', [GapController::class, 'index'])->name('gaps.index');
         Route::get('/lowongan/{job}/gap', [GapController::class, 'show'])->whereNumber('job')->name('gaps.show');
