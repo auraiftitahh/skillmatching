@@ -15,6 +15,7 @@ use App\Http\Controllers\Applicant\DashboardController;
 use App\Http\Controllers\Applicant\ExperienceController;
 use App\Http\Controllers\Applicant\ExternalEvidenceController;
 use App\Http\Controllers\Applicant\GapController;
+use App\Http\Controllers\Applicant\JobApplicationController;
 use App\Http\Controllers\Applicant\JobCatalogController;
 use App\Http\Controllers\Applicant\LearningPlanController;
 use App\Http\Controllers\Applicant\MatchingController;
@@ -85,6 +86,9 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::delete('/lowongan/{job}/simpan', [JobCatalogController::class, 'unsave'])->whereNumber('job')->name('jobs.unsave');
         Route::get('/kecocokan', [MatchingController::class, 'index'])->name('matching.index');
         Route::get('/kecocokan/riwayat', [MatchingController::class, 'history'])->name('matching.history');
+        Route::get('/lamaran', [JobApplicationController::class, 'index'])->name('applications.index');
+        Route::post('/lamaran', [JobApplicationController::class, 'save'])->name('applications.store');
+        Route::patch('/lamaran/{application}', [JobApplicationController::class, 'save'])->whereNumber('application')->name('applications.update');
         Route::post('/kecocokan/riwayat', [MatchingController::class, 'saveHistory'])->name('matching.history.store');
         Route::get('/lowongan/{job}/kecocokan', [MatchingController::class, 'show'])->whereNumber('job')->name('matching.show');
         Route::get('/gap', [GapController::class, 'index'])->name('gaps.index');

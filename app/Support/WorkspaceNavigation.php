@@ -15,6 +15,7 @@ class WorkspaceNavigation
             'rencana-belajar' => ['Rencana Belajar', 'list'],
             'simulasi' => ['Simulasi Kecocokan', 'chart'],
             'bukti-kompetensi' => ['Bukti Kompetensi', 'badge'],
+            'lamaran' => ['Catatan Lamaran', 'briefcase'],
             'pengaturan' => ['Pengaturan', 'settings'],
         ],
         'admin' => [
@@ -43,7 +44,7 @@ class WorkspaceNavigation
     ];
 
     public const OPERATIONAL = [
-        'pelamar' => ['dashboard', 'profil', 'riwayat', 'skill', 'lowongan', 'pelatihan', 'rencana-belajar', 'simulasi', 'bukti-kompetensi'],
+        'pelamar' => ['dashboard', 'profil', 'riwayat', 'skill', 'lowongan', 'pelatihan', 'rencana-belajar', 'simulasi', 'bukti-kompetensi', 'lamaran'],
         'admin' => ['dashboard', 'akun', 'persetujuan-lembaga', 'pengajuan-pelatihan', 'skill', 'jabatan', 'lowongan', 'bobot', 'aktivitas'],
         'sertifikasi' => ['dashboard', 'status-akun', 'pengajuan', 'pelatihan', 'peserta', 'bukti-eksternal', 'riwayat'],
     ];
