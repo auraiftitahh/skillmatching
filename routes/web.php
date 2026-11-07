@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\InstitutionReviewController;
+use App\Http\Controllers\Admin\JobImportController;
 use App\Http\Controllers\Admin\JobPublicationController;
 use App\Http\Controllers\Admin\JobTaxonomyController;
 use App\Http\Controllers\Admin\JobVacancyController;
@@ -117,6 +118,8 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::patch('/pelatihan/{training}/publikasi', [TrainingPublicationController::class, 'status'])->whereNumber('training')->name('trainings.status');
         Route::patch('/lowongan/{job}/publikasi', [JobPublicationController::class, 'update'])->whereNumber('job')->name('jobs.publication');
         Route::get('/lowongan', [JobVacancyController::class, 'index'])->name('jobs.index');
+        Route::get('/lowongan/impor', [JobImportController::class, 'show'])->name('jobs.import.show');
+        Route::post('/lowongan/impor', [JobImportController::class, 'preview'])->block(30, 5)->name('jobs.import.preview');
         Route::get('/lowongan/tambah', [JobVacancyController::class, 'create'])->name('jobs.create');
         Route::post('/lowongan', [JobVacancyController::class, 'store'])->name('jobs.store');
         Route::get('/lowongan/{job}', [JobVacancyController::class, 'edit'])->whereNumber('job')->name('jobs.edit');
