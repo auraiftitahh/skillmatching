@@ -120,6 +120,8 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::get('/lowongan', [JobVacancyController::class, 'index'])->name('jobs.index');
         Route::get('/lowongan/impor', [JobImportController::class, 'show'])->name('jobs.import.show');
         Route::post('/lowongan/impor', [JobImportController::class, 'preview'])->block(30, 5)->name('jobs.import.preview');
+        Route::post('/lowongan/impor/konfirmasi', [JobImportController::class, 'confirm'])->block(60, 5)->name('jobs.import.confirm');
+        Route::delete('/lowongan/impor', [JobImportController::class, 'cancel'])->block(30, 5)->name('jobs.import.cancel');
         Route::get('/lowongan/tambah', [JobVacancyController::class, 'create'])->name('jobs.create');
         Route::post('/lowongan', [JobVacancyController::class, 'store'])->name('jobs.store');
         Route::get('/lowongan/{job}', [JobVacancyController::class, 'edit'])->whereNumber('job')->name('jobs.edit');

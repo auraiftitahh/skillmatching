@@ -8,6 +8,8 @@ use App\Support\WorkspacePage;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -82,6 +84,54 @@ class JobImportController extends Controller
         ]);
 
         return redirect()->route('admin.jobs.import.show');
+    }
+
+    public function confirm(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['token' => 'required|uuid']);
+        $preview = $request->session()->get(self::SESSION_KEY);
+        abort_unless($preview && $preview['owner'] === $request->user()->id
+            && $preview['expires'] > now()->timestamp && hash_equals($preview['token'], $data['token']),
+            422, 'Pratinjau tidak berlaku. Unggah ulang CSV.');
+
+        $lock = Cache::lock('catalog-job-csv-import', 60);
+        abort_unless($lock->get(), 409, 'Impor lain sedang berjalan. Coba konfirmasi lagi.');
+        try {
+            [$saved, $skipped] = $this->saveRows($preview['rows']);
+            $request->session()->forget(self::SESSION_KEY);
+        } finally {
+            $lock->release();
+        }
+
+        return redirect()->route('admin.jobs.import.show')
+            ->with('success', "{$saved} lowongan tersimpan sebagai draf.")
+            ->with('import_skipped', $skipped);
+    }
+
+    private function saveRows(array $rows): array
+    {
+        return DB::transaction(function () use ($rows): array {
+            $saved = 0;
+            $skipped = [];
+            foreach ($rows as $row) {
+                if ($row['errors'] !== [] || $this->exists($row['data'])) {
+                    $skipped[] = $row['line'];
+
+                    continue;
+                }
+                JobVacancy::create([...$row['data'], 'status' => 'draft']);
+                $saved++;
+            }
+
+            return [$saved, $skipped];
+        });
+    }
+
+    public function cancel(Request $request): RedirectResponse
+    {
+        $request->session()->forget(self::SESSION_KEY);
+
+        return redirect()->route('admin.jobs.import.show')->with('success', 'Pratinjau dibatalkan.');
     }
 
     private function rules(): array
