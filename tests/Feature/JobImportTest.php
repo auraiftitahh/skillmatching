@@ -35,4 +35,27 @@ CSV);
         $this->assertSame('draft', JobVacancy::firstOrFail()->status);
         $this->post(route('admin.jobs.import.confirm'), ['token' => $token])->assertUnprocessable();
     }
+
+    public function test_expired_foreign_and_cancelled_previews_cannot_write_to_catalog(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $otherAdmin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $preview = [
+            'owner' => $admin->id,
+            'token' => 'df494bf0-dcce-42d6-9885-13ec2df30e17',
+            'expires' => now()->addMinute()->timestamp,
+            'rows' => [],
+        ];
+        $payload = ['token' => $preview['token']];
+        $url = route('admin.jobs.import.confirm');
+
+        $this->actingAs($otherAdmin)->withSession(['job_csv_preview' => $preview])
+            ->post($url, $payload)->assertUnprocessable();
+        $this->actingAs($admin)->withSession(['job_csv_preview' => [...$preview, 'expires' => now()->subSecond()->timestamp]])
+            ->post($url, $payload)->assertUnprocessable();
+        $this->withSession(['job_csv_preview' => $preview])->delete(route('admin.jobs.import.cancel'))
+            ->assertRedirect(route('admin.jobs.import.show'))->assertSessionMissing('job_csv_preview');
+        $this->post($url, $payload)->assertUnprocessable();
+        $this->assertDatabaseCount('job_vacancies', 0);
+    }
 }
