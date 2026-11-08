@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\JobVacancy;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -11,7 +12,7 @@ class JobImportTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_previews_mixed_csv_without_writing_to_catalog(): void
+    public function test_admin_previews_mixed_csv_and_confirms_only_valid_rows_as_drafts(): void
     {
         $this->withoutVite();
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
@@ -26,5 +27,12 @@ CSV);
             ->assertRedirect(route('admin.jobs.import.show'));
         $this->assertDatabaseCount('job_vacancies', 0);
         $this->get(route('admin.jobs.import.show'))->assertOk()->assertSee('Siap disimpan')->assertSee('Judul dan perusahaan sudah ada.');
+        $token = session('job_csv_preview.token');
+
+        $this->post(route('admin.jobs.import.confirm'), ['token' => $token])->assertRedirect()
+            ->assertSessionHas('import_skipped', [3, 4]);
+        $this->assertDatabaseCount('job_vacancies', 1);
+        $this->assertSame('draft', JobVacancy::firstOrFail()->status);
+        $this->post(route('admin.jobs.import.confirm'), ['token' => $token])->assertUnprocessable();
     }
 }
