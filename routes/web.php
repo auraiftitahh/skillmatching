@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\EvaluationController;
 use App\Http\Controllers\Admin\InstitutionReviewController;
 use App\Http\Controllers\Admin\JobImportController;
 use App\Http\Controllers\Admin\JobPublicationController;
@@ -86,6 +87,7 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::post('/lowongan/{job}/simpan', [JobCatalogController::class, 'save'])->whereNumber('job')->name('jobs.save');
         Route::delete('/lowongan/{job}/simpan', [JobCatalogController::class, 'unsave'])->whereNumber('job')->name('jobs.unsave');
         Route::get('/kecocokan', [MatchingController::class, 'index'])->name('matching.index');
+        Route::post('/kecocokan/{job}/umpan-balik', [MatchingController::class, 'feedback'])->whereNumber('job')->name('matching.feedback');
         Route::get('/kecocokan/riwayat', [MatchingController::class, 'history'])->name('matching.history');
         Route::get('/lamaran', [JobApplicationController::class, 'index'])->name('applications.index');
         Route::post('/lamaran', [JobApplicationController::class, 'save'])->name('applications.store');
@@ -105,6 +107,7 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
         Route::delete('/riwayat/{experience}', [ExperienceController::class, 'destroy'])->whereNumber('experience')->name('experiences.destroy');
     });
     Route::prefix('admin')->name('admin.')->middleware('workspace.role:admin')->group(function () {
+        Route::get('/evaluasi/umpan-balik', [EvaluationController::class, 'feedback'])->name('evaluation.feedback');
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/aktivitas', [ActivityController::class, 'index'])->name('activity.index');
         Route::get('/jabatan', [JobTaxonomyController::class, 'index'])->name('taxonomies.index');

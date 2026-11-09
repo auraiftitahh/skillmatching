@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Applicant;
 
 use App\Http\Controllers\Controller;
+use App\Models\WeightConfiguration;
 use App\Services\MatchingService;
 use App\Support\Publication;
 use App\Support\WorkspacePage;
@@ -14,6 +15,21 @@ use Illuminate\Support\Facades\DB;
 
 class MatchingController extends Controller
 {
+    public function feedback(Request $request, int $job): RedirectResponse
+    {
+        $record = Publication::jobs()->findOrFail($job);
+        $data = $request->validate(['rating' => 'required|in:relevant,not_relevant', 'comment' => 'nullable|string|max:2000']);
+        DB::table('recommendation_feedback')->upsert([
+            [
+                ...$data, 'comment' => $data['comment'] ?? null, 'user_id' => $request->user()->id,
+                'job_vacancy_id' => $record->id, 'weight_configuration_id' => WeightConfiguration::current()->id,
+                'created_at' => now(), 'updated_at' => now(),
+            ],
+        ], ['user_id', 'job_vacancy_id', 'weight_configuration_id'], ['rating', 'comment', 'updated_at']);
+
+        return redirect()->route('applicant.matching.show', $job)->with('status', 'Umpan balik tersimpan.');
+    }
+
     public function history(Request $request): View
     {
         return view('applicant.matching.history', [
