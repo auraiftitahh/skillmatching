@@ -1,4 +1,5 @@
 <x-layouts.workspace :page-title="$pageTitle" :role-label="$roleLabel" :navigation="$navigation" :home-url="$homeUrl" :back-url="$backUrl" :user-name="$userName" :logout-url="route('logout')">
+    <div class="actions"><a class="button button-outline" href="{{ route('admin.evaluation.setup') }}">Profil uji dan penilaian ahli</a></div>
     <form method="get" class="card form-grid">
         <label class="field">Penilaian
             <select name="rating">
