@@ -108,6 +108,9 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
     });
     Route::prefix('admin')->name('admin.')->middleware('workspace.role:admin')->group(function () {
         Route::get('/evaluasi/umpan-balik', [EvaluationController::class, 'feedback'])->name('evaluation.feedback');
+        Route::get('/evaluasi/penilaian', [EvaluationController::class, 'setup'])->name('evaluation.setup');
+        Route::post('/evaluasi/profil', [EvaluationController::class, 'storeProfile'])->name('evaluation.profiles.store');
+        Route::post('/evaluasi/penilaian', [EvaluationController::class, 'storeRating'])->name('evaluation.ratings.store');
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/aktivitas', [ActivityController::class, 'index'])->name('activity.index');
         Route::get('/jabatan', [JobTaxonomyController::class, 'index'])->name('taxonomies.index');
