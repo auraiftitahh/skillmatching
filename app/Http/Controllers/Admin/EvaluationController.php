@@ -15,9 +15,36 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EvaluationController extends Controller
 {
+    public function export(Request $request): StreamedResponse
+    {
+        $query = $this->reportRows($this->filters($request))->orderByDesc('pairs.created_at')->orderByDesc('pairs.id');
+
+        return response()->streamDownload(function () use ($query): void {
+            $output = fopen('php://output', 'wb');
+            fputcsv($output, ['Profil', 'Kelompok', 'Posisi', 'Perusahaan', 'Skor sistem', 'Penilaian ahli', 'Versi bobot', 'Tanggal WIB'], escape: '');
+            foreach ($query->lazy(250) as $record) {
+                fputcsv($output, [
+                    $this->csvText($record->code), $this->csvText($record->group),
+                    $this->csvText($record->job_title), $this->csvText($record->company),
+                    $record->system_score, $record->expert_rating, $record->version,
+                    Carbon::parse($record->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                ], escape: '');
+            }
+            fclose($output);
+        }, 'evaluasi-rekomendasi-'.now('Asia/Jakarta')->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    private function csvText(?string $value): string
+    {
+        $value ??= '';
+
+        return preg_match('/^[\t\r\n]|^\s*[=+@-]/u', $value) === 1 ? "'".$value : $value;
+    }
+
     public function report(Request $request): View
     {
         $filters = $this->filters($request);
