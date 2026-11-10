@@ -9,13 +9,56 @@ use App\Services\MatchingService;
 use App\Support\Publication;
 use App\Support\WorkspacePage;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class EvaluationController extends Controller
 {
+    public function report(Request $request): View
+    {
+        $filters = $this->filters($request);
+        $query = $this->reportRows($filters);
+
+        return view('admin.evaluation.report', [
+            ...WorkspacePage::data($request, 'admin', 'evaluasi', 'Rekap Evaluasi'),
+            'records' => (clone $query)->latest('pairs.created_at')->orderByDesc('pairs.id')->paginate(15)->withQueryString(),
+            'totals' => (clone $query)->select([])->selectRaw('COUNT(*) AS total, AVG(pairs.system_score) AS system_average, AVG(pairs.expert_rating) AS expert_average')->first(),
+            'versions' => WeightConfiguration::orderByDesc('version')->get(['id', 'version']),
+            'filters' => $filters,
+        ]);
+    }
+
+    private function filters(Request $request): array
+    {
+        return $request->validate([
+            'from' => 'nullable|date_format:Y-m-d',
+            'to' => ['nullable', 'date_format:Y-m-d', ...($request->filled('from') ? ['after_or_equal:from'] : [])],
+            'version' => 'nullable|integer|exists:weight_configurations,id',
+        ]);
+    }
+
+    private function reportRows(array $filters): Builder
+    {
+        $query = DB::table('evaluation_pairs as pairs')
+            ->join('evaluation_profiles as profiles', 'profiles.id', '=', 'pairs.evaluation_profile_id')
+            ->join('weight_configurations as weights', 'weights.id', '=', 'pairs.weight_configuration_id');
+        if (! empty($filters['from'])) {
+            $query->where('pairs.created_at', '>=', Carbon::parse($filters['from'], 'Asia/Jakarta')->startOfDay()->timezone(config('app.timezone')));
+        }
+        if (! empty($filters['to'])) {
+            $query->where('pairs.created_at', '<', Carbon::parse($filters['to'], 'Asia/Jakarta')->startOfDay()->addDay()->timezone(config('app.timezone')));
+        }
+        if (! empty($filters['version'])) {
+            $query->where('pairs.weight_configuration_id', $filters['version']);
+        }
+
+        return $query->select('pairs.*', 'profiles.code', 'profiles.group', 'weights.version');
+    }
+
     public function setup(Request $request): View
     {
         return view('admin.evaluation.setup', [

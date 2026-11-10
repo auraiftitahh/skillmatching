@@ -28,6 +28,7 @@ class WorkspaceNavigation
             'lowongan' => ['Lowongan Kerja', 'briefcase'],
             'bobot' => ['Pengaturan Bobot', 'settings'],
             'aktivitas' => ['Riwayat Aktivitas', 'history'],
+            'evaluasi' => ['Evaluasi Rekomendasi', 'chart'],
             'laporan' => ['Laporan', 'chart'],
         ],
         'sertifikasi' => [
@@ -45,7 +46,7 @@ class WorkspaceNavigation
 
     public const OPERATIONAL = [
         'pelamar' => ['dashboard', 'profil', 'riwayat', 'skill', 'lowongan', 'pelatihan', 'rencana-belajar', 'simulasi', 'bukti-kompetensi', 'lamaran'],
-        'admin' => ['dashboard', 'akun', 'persetujuan-lembaga', 'pengajuan-pelatihan', 'skill', 'jabatan', 'lowongan', 'bobot', 'aktivitas'],
+        'admin' => ['dashboard', 'akun', 'persetujuan-lembaga', 'pengajuan-pelatihan', 'skill', 'jabatan', 'lowongan', 'bobot', 'aktivitas', 'evaluasi'],
         'sertifikasi' => ['dashboard', 'status-akun', 'pengajuan', 'pelatihan', 'peserta', 'bukti-eksternal', 'riwayat'],
     ];
 
