@@ -109,6 +109,7 @@ Route::middleware(['auth', 'account.eligible', 'auth.session'])->group(function 
     Route::prefix('admin')->name('admin.')->middleware('workspace.role:admin')->group(function () {
         Route::get('/evaluasi/umpan-balik', [EvaluationController::class, 'feedback'])->name('evaluation.feedback');
         Route::get('/evaluasi', [EvaluationController::class, 'report'])->name('evaluation.report');
+        Route::get('/evaluasi/ekspor', [EvaluationController::class, 'export'])->name('evaluation.export');
         Route::get('/evaluasi/penilaian', [EvaluationController::class, 'setup'])->name('evaluation.setup');
         Route::post('/evaluasi/profil', [EvaluationController::class, 'storeProfile'])->name('evaluation.profiles.store');
         Route::post('/evaluasi/penilaian', [EvaluationController::class, 'storeRating'])->name('evaluation.ratings.store');

@@ -22,6 +22,7 @@
     <section class="card">
         <h2>{{ $totals->total }} penilaian</h2>
         @if ($totals->total > 0)
+            <a class="button button-outline" href="{{ route('admin.evaluation.export', $filters) }}">Unduh CSV sesuai filter</a>
             <p>Rata-rata skor sistem {{ number_format($totals->system_average, 2, ',', '.') }}/100 · Rata-rata penilaian ahli {{ number_format($totals->expert_average, 2, ',', '.') }}/4.</p>
             <div class="table-scroll">
                 <table>
