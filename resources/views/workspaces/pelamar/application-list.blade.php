@@ -1,0 +1,5 @@
+@include('components.data-filters', ['searchHint'=>'Cari pekerjaan atau perusahaan', 'filterOptions'=>[['name'=>'status','label'=>'Status','options'=>[''=>'Semua status','saved'=>'Disimpan','applied'=>'Sudah dilamar','processing'=>'Diproses','interview'=>'Wawancara','accepted'=>'Diterima','rejected'=>'Tidak lanjut']]]])
+<div class="section-actions"><p>Pencatatan saja; pengiriman lamaran dilakukan di luar Skill Matching.</p><a class="btn primary" href="/pelamar/lamaran/form">+ Tambah Catatan</a></div><div class="list">
+@forelse($applications as $app)<a class="card clickable record-row" href="/pelamar/lamaran/detail?id={{ $app->id }}"><span class="badge">{{ ['saved'=>'Disimpan','applied'=>'Sudah Dilamar','processing'=>'Diproses','interview'=>'Wawancara','accepted'=>'Diterima','rejected'=>'Tidak Lanjut'][$app->status]??'Tidak diketahui' }}</span><h3>{{ $app->job_title }}</h3><p>{{ $app->company }}</p><small>Terakhir diperbarui: {{ \Carbon\Carbon::parse($app->updated_at)->locale('id')->translatedFormat('d F Y') }}</small><span class="record-action">Lihat Detail →</span></a>
+@empty<div class="empty">Belum ada catatan lamaran.</div>
+@endforelse</div>

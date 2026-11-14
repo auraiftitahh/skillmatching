@@ -1,21 +1,9 @@
 <?php
-
 namespace App\Console\Commands;
-
-use App\Models\JobVacancy;
 use Illuminate\Console\Command;
-
-class ExpireVacancies extends Command
-{
-    protected $signature = 'skillmatching:expire-jobs';
-
-    protected $description = 'Menonaktifkan publikasi lowongan yang telah melewati batas berlaku';
-
-    public function handle(): int
-    {
-        $count = JobVacancy::where('status', 'active')->whereDate('expires_at', '<', now('Asia/Jakarta')->toDateString())->update(['status' => 'inactive']);
-        $this->info($count.' lowongan kedaluwarsa dinonaktifkan.');
-
-        return self::SUCCESS;
-    }
+use Illuminate\Support\Facades\DB;
+class ExpireVacancies extends Command {
+    protected $signature = 'vacancies:expire';
+    protected $description = 'Menandai lowongan aktif yang telah kedaluwarsa';
+    public function handle(): int { $n=DB::table('job_vacancies')->where('status','active')->whereDate('expires_at','<',now()->toDateString())->update(['status'=>'expired','updated_at'=>now()]); $this->info("{$n} lowongan kedaluwarsa."); return self::SUCCESS; }
 }

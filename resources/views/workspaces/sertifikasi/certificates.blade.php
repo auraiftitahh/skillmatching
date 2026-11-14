@@ -1,0 +1,6 @@
+<nav class="status-tabs" aria-label="Status sertifikat">@foreach([''=>'Semua','pending'=>'Menunggu','verified'=>'Terverifikasi','rejected'=>'Ditolak','cancelled'=>'Dibatalkan'] as $value=>$label)<a class="{{ request('status','')===$value?'selected':'' }}" href="/sertifikasi/sertifikat?{{ http_build_query(['status'=>$value,'q'=>request('q')]) }}" @if(request('status','')===$value) aria-current="page" @endif>{{ $label }}</a>@endforeach</nav>
+@include('components.data-filters', ['searchHint'=>'Cari nama peserta atau sertifikat'])
+<section class="card"><h2>Permintaan Verifikasi</h2><p>Hanya sertifikat yang ditujukan kepada lembaga Anda.</p><div class="table-wrap"><table><thead><tr><th>Pelamar</th><th>Sertifikat</th><th>Diajukan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+@forelse($certificates as $c)<tr><td>{{ $c->applicant_name }}</td><td>{{ $c->title }}</td><td>{{ \Carbon\Carbon::parse($c->created_at)->locale('id')->translatedFormat('d F Y') }}</td><td><span class="badge">{{ $statusText[$c->status]??$c->status }}</span></td><td><a href="/sertifikasi/sertifikat/detail?id={{ $c->id }}">Lihat Detail</a></td></tr>
+@empty<tr><td colspan="5">Tidak ada permintaan verifikasi.</td></tr>
+@endforelse</tbody></table></div></section>

@@ -1,0 +1,4 @@
+@include('components.data-filters', ['searchHint'=>'Cari alasan perubahan atau versi', 'filterOptions'=>[['name'=>'status','label'=>'Status','options'=>[''=>'Semua status','active'=>'Aktif','archived'=>'Arsip']]]])
+<section class="card"><h2>Riwayat Aturan Pencocokan</h2><div class="table-wrap"><table><thead><tr><th>Versi</th><th>Wajib</th><th>Diutamakan</th><th>Faktor</th><th>Ambang</th><th>Alasan</th><th>Status</th><th>Dibuat</th><th>Admin</th></tr></thead><tbody>
+@foreach($weights as $w)<tr><td><a href="/admin/bobot/detail?id={{ $w->id }}">V{{ $w->version }}</a></td><td>{{ $w->required_weight }}</td><td>{{ $w->preferred_weight }}</td><td>{{ $w->related_factor }}</td><td>{{ $w->threshold }}</td><td>{{ $w->reason }}</td><td><span class="badge">{{ $w->is_active?'Aktif':'Arsip' }}</span></td><td>{{ \App\Support\Display::date($w->created_at,true) }}</td><td>{{ $creatorNames[$w->created_by]??'—' }}</td></tr>
+@endforeach</tbody></table></div></section>

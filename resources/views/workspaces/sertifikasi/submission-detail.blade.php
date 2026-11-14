@@ -1,0 +1,1 @@
+@include('components.submission-detail')

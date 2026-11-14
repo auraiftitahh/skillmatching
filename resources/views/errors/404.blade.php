@@ -1,1 +1,0 @@
-<x-layouts.auth title="Halaman tidak tersedia"><p class="eyebrow">Informasi layanan</p><h1>Halaman tidak tersedia</h1><p class="intro">Informasi mungkin sudah tidak tersedia atau tautannya tidak sesuai. Kembali ke ruang Anda untuk memilih langkah berikutnya.</p><a class="button button-primary full-width" href="{{ url('/') }}">Kembali ke ruang saya</a></x-layouts.auth>

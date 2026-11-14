@@ -1,44 +1,41 @@
 <?php
-
 namespace App\Support;
 
-use App\Models\JobVacancy;
-use App\Models\Training;
+use App\Models\{JobVacancy, Training};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
+/** Shared publication rules for lists, direct links, recommendations and actions. */
 final class Publication
 {
-    public static function trainings(bool $activeOnly = true): Builder
+    public static function jobs(): Builder
     {
-        $query = Training::query()->whereHas('body', fn ($q) => $q->where('status', 'active')->whereHas('user', fn ($u) => $u->where('is_active', true)->whereNotNull('email_verified_at')))
-            ->whereExists(fn ($q) => $q->selectRaw('1')->from('training_submissions')->whereColumn('training_submissions.training_id', 'trainings.id')->where('status', 'approved'))
-            ->whereHas('skills')->whereDoesntHave('skills', fn ($q) => $q->where('skills.is_active', false));
-        if ($activeOnly) {
-            $query->where('trainings.status', 'active');
-        }
-
-        return $query;
+        return JobVacancy::where('status', 'active')
+            ->whereDate('expires_at', '>=', now()->toDateString())
+            ->whereExists(fn($q) => $q->selectRaw('1')->from('job_required_skills')
+                ->whereColumn('job_vacancy_id', 'job_vacancies.id'));
     }
 
-    public static function prerequisitesMet(int $userId, int $trainingId): bool
+    public static function trainings(): Builder
     {
-        $required = DB::table('training_prerequisites')->where('training_id', $trainingId)->pluck('prerequisite_id')->map(fn ($id) => (int) $id)->all();
-        $completed = DB::table('training_enrollments')->where('user_id', $userId)->where('status', 'completed')->pluck('training_id')->map(fn ($id) => (int) $id)->all();
-
-        return array_diff($required, $completed) === [];
+        return Training::where('status', 'active')->whereExists(fn($q) => $q->selectRaw('1')
+            ->from('training_skills')->whereColumn('training_id', 'trainings.id'))
+            ->where(function ($q) {
+                $q->whereNull('certification_body_id')->orWhereIn('certification_body_id', self::bodyIds());
+            });
     }
 
-    public static function jobs(bool $activeOnly = true): Builder
+    public static function bodyIds()
     {
-        $query = JobVacancy::whereDate('expires_at', '>=', now('Asia/Jakarta')->toDateString())
-            ->where('description', '!=', '')->where(fn ($q) => $q->where('source_url', 'like', 'https://%')->orWhere('source_url', 'like', 'http://%'))
-            ->whereHas('skills')->whereDoesntHave('skills', fn ($q) => $q->where('skills.is_active', false)
-            ->orWhere('job_required_skills.minimum_level', '<', 1)->orWhere('job_required_skills.minimum_level', '>', 4));
-        if ($activeOnly) {
-            $query->where('job_vacancies.status', 'active');
-        }
+        return DB::table('certification_bodies as cb')->join('users as bu', 'bu.id', '=', 'cb.user_id')
+            ->where('cb.status', 'active')->where('bu.is_active', true)->whereNotNull('bu.email_verified_at')
+            ->select('cb.id');
+    }
 
-        return $query;
+    public static function prerequisitesMet(int $userId,int $trainingId): bool
+    {
+        $required=DB::table('training_prerequisites')->where('training_id',$trainingId)->pluck('prerequisite_id')->map(fn($x)=>(int)$x)->all();
+        $done=DB::table('training_enrollments')->where('user_id',$userId)->where('status','completed')->pluck('training_id')->map(fn($x)=>(int)$x)->all();
+        return count(array_diff($required,$done))===0;
     }
 }

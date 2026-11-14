@@ -1,0 +1,8 @@
+<section class="journey-hero"><div><span class="eyebrow">SUMBER KEMAMPUAN YANG JELAS</span><h2>Bukti kompetensi Anda</h2><p>Kelulusan katalog dikonfirmasi lembaga. Sertifikat eksternal disimpan dan diperiksa oleh penerbitnya bila terdaftar.</p></div><a class="btn primary" href="/pelamar/sertifikat/ajukan">+ Bukti Eksternal</a></section><h2>Bukti eksternal</h2>
+@include('components.external-evidence-list')
+<details class="card"><summary>Pengajuan sertifikat katalog terdahulu</summary>@include('components.data-filters', ['searchHint'=>'Cari judul sertifikat', 'filterOptions'=>[['name'=>'status','label'=>'Status','options'=>[''=>'Semua status','pending'=>'Menunggu','verified'=>'Terverifikasi','rejected'=>'Ditolak','cancelled'=>'Dibatalkan']]]])
+<p>Daftar ini menyimpan pengajuan katalog terdahulu. Untuk bukti baru dari luar katalog, gunakan tombol Bukti Eksternal di atas; untuk kelulusan katalog, gunakan Aktivitas Pelatihan.</p><div class="list">
+@forelse($certificates as $cert)<a class="card clickable record-row" href="/pelamar/sertifikat/detail?id={{ $cert->id }}"><span class="badge {{ $cert->status==='rejected'?'orange':'' }}">{{ $statusText[$cert->status]??$cert->status }}</span><h3>{{ $cert->title }}</h3><small>Diajukan {{ \Carbon\Carbon::parse($cert->created_at)->locale('id')->translatedFormat('d F Y') }}</small><span class="record-action">Lihat Detail →</span></a>
+@empty<div class="empty">Belum ada sertifikat yang diajukan.</div>
+@endforelse</div>
+</details>
