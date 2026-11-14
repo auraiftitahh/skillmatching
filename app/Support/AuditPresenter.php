@@ -18,9 +18,14 @@ final class AuditPresenter
         'catalog.save' => 'Memperbarui data',
         'catalog.status' => 'Mengubah status data',
         'catalog.bulk_skills' => 'Memperbarui keterampilan terpilih',
+        'skill_submission.approved' => 'Menyetujui usulan keterampilan',
+        'skill_submission.rejected' => 'Menolak usulan keterampilan',
         'training_submission.approved' => 'Menyetujui pengajuan pelatihan',
         'training_submission.revision' => 'Meminta perbaikan pengajuan',
         'training_submission.rejected' => 'Menolak pengajuan pelatihan',
+        'vacancy_submission.approved' => 'Menyetujui dan menerbitkan lowongan terkait',
+        'vacancy_submission.revision' => 'Meminta perbaikan lowongan terkait',
+        'vacancy_submission.rejected' => 'Menolak lowongan terkait',
         'external_certificate.submit' => 'Menyimpan pengajuan bukti eksternal',
         'external_certificate.edit' => 'Memperbarui bukti eksternal',
         'external_certificate.link_issuer' => 'Menghubungkan bukti dengan penerbit',
@@ -86,6 +91,7 @@ final class AuditPresenter
 
             if($entry->subject_type==='training_submissions' && $name)$name=json_decode($name,true)['title']??'Pengajuan pelatihan';
             $description = [];
+            if (filled($details['skill'] ?? null)) $description[] = 'Skill: '.$details['skill'];
             if (filled($details['status'] ?? null)) $description[] = 'Status: '.$details['status'];
             if (filled($details['note'] ?? null)) $description[] = 'Catatan: '.$details['note'];
             if (filled($details['reason'] ?? null)) $description[] = 'Alasan: '.$details['reason'];

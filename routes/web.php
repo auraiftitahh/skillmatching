@@ -16,7 +16,10 @@ Route::get('/verification-notice',fn()=>view('auth',['mode'=>'verify']))->name('
 Route::post('/logout',[AuthController::class,'logout'])->middleware('auth')->name('logout');
 Route::middleware(['auth','active'])->group(function(){
  Route::post('/institution/training-submissions',[\App\Http\Controllers\TrainingSubmissionController::class,'save'])->name('submissions.save');
+ Route::post('/admin/training-submissions/{id}/skills/{index}/review',[\App\Http\Controllers\TrainingSubmissionController::class,'reviewSkill'])->whereNumber(['id','index'])->name('submissions.skills.review');
  Route::post('/admin/training-submissions/{id}/review',[\App\Http\Controllers\TrainingSubmissionController::class,'review'])->name('submissions.review');
+ Route::post('/admin/training-submissions/{id}/vacancy/review',[\App\Http\Controllers\TrainingSubmissionController::class,'reviewVacancy'])->whereNumber('id')->name('submissions.vacancy.review');
+ Route::post('/institution/training-submissions/{id}/vacancy/resubmit',[\App\Http\Controllers\TrainingSubmissionController::class,'resubmitVacancy'])->whereNumber('id')->name('submissions.vacancy.resubmit');
  Route::put('/external-evidence/{id}',[\App\Http\Controllers\ExternalEvidenceController::class,'update'])->name('external-evidence.update');
  Route::post('/external-evidence/{id}/issuer',[\App\Http\Controllers\ExternalEvidenceController::class,'linkIssuer'])->name('external-evidence.link');
  Route::post('/external-evidence/{id}/withdraw',[\App\Http\Controllers\ExternalEvidenceController::class,'withdraw'])->name('external-evidence.withdraw');
@@ -51,6 +54,7 @@ Route::middleware(['auth','active'])->group(function(){
  Route::patch('/admin/skills/{id}/status',[ActionController::class,'skillStatus'])->name('admin.skills.status');
  Route::delete('/admin/skills/{id}',[ActionController::class,'deleteSkill'])->name('admin.skills.destroy');
  Route::post('/admin/vacancies/{id}/skills',[ActionController::class,'attachJobSkill'])->name('vacancy.skill');
+ Route::post('/admin/vacancies/{id}/skills/new',[ActionController::class,'createVacancySkill'])->whereNumber('id')->name('vacancy.skill.create');
  Route::post('/admin/trainings/{id}/skills',[ActionController::class,'attachTrainingSkill'])->name('training.skill');
  Route::post('/admin/trainings/{id}/prerequisites',[ActionController::class,'prerequisite'])->name('training.prerequisite');
  Route::post('/admin/mappings',[ActionController::class,'mapping'])->name('mappings.save');

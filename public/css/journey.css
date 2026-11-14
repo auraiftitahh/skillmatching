@@ -22,3 +22,24 @@ label{font-size:14px;line-height:1.5}input,select,textarea{font-size:14px;line-h
 
 .demo-login{border-top:1px solid var(--line);padding-top:16px;margin-top:16px}
 .demo-login-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+
+.vacancy-skills{margin-block:24px}
+.vacancy-skill-list{display:grid;gap:12px}
+.vacancy-skill,.vacancy-toggle{min-width:0;border:1px solid var(--line);border-radius:10px;background:#fff}
+.vacancy-skill:has(.vacancy-skill-choice>input:checked){border-color:#8abfa9;background:#f5faf7}
+label.vacancy-skill-choice,.submission-editor label.vacancy-skill-choice{
+  display:grid;
+  grid-template-columns:18px minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  min-height:48px;
+  padding:12px 14px;
+  margin:0;
+  cursor:pointer;
+  overflow-wrap:anywhere;
+}
+.vacancy-skill-choice>input[type=checkbox]{width:18px;height:18px;min-height:0;margin:0}
+.vacancy-skill-settings{padding:12px 14px 14px;border-top:1px solid var(--line)}
+.vacancy-skill:not(:has(.vacancy-skill-choice>input:checked)) .vacancy-skill-settings{display:none}
+.vacancy-skill-settings>label{min-width:0;margin:0}
+#vacancy-fields{min-inline-size:0}

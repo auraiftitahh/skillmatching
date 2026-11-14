@@ -64,7 +64,7 @@ class ActionController {
  public function weight(Request $r){$this->role($r,'admin');$d=$r->validate(['required_weight'=>'required|integer|between:1,5','preferred_weight'=>'required|integer|between:1,5','related_factor'=>'required|numeric|between:0,1','threshold'=>'required|integer|between:0,100','reason'=>'required|string|min:5|max:1000']);DB::transaction(function()use($r,$d){DB::table('weight_configurations')->orderBy('id')->lockForUpdate()->get();$next=1+(int)DB::table('weight_configurations')->max('version');DB::table('weight_configurations')->where('is_active',true)->update(['is_active'=>false,'updated_at'=>now()]);$id=DB::table('weight_configurations')->insertGetId([...$d,'version'=>$next,'created_by'=>$r->user()->id,'is_active'=>true,'created_at'=>now(),'updated_at'=>now()]);$this->audit($r,'weight.publish','weight_configurations',$id,$d);});return redirect('/admin/bobot')->with('success','Versi konfigurasi baru diterbitkan.');}
  public function account(Request $r,int $id){$this->role($r,'admin');$d=$r->validate(['decision'=>'required|in:activate,deactivate,verify,reject','reason'=>'required|string|min:5|max:500']);$user=User::findOrFail($id);abort_if($user->role==='admin',403,'Akun Admin tidak dapat diubah melalui pengelolaan akun.');abort_if(in_array($d['decision'],['verify','reject']) && $user->role!=='sertifikasi',422,'Verifikasi hanya untuk Badan Sertifikasi.');if($user->role==='sertifikasi'&&$d['decision']==='activate'){ $currentBody=DB::table('certification_bodies')->where('user_id',$user->id)->first(); if($currentBody && in_array($currentBody->status,['pending','rejected'],true))return back()->withErrors(['decision'=>'Lembaga perlu melalui verifikasi Admin sebelum dapat diaktifkan.']); }abort_if($user->id===$r->user()->id&&$d['decision']==='deactivate',422,'Tidak dapat menonaktifkan diri sendiri.');DB::transaction(function()use($r,$user,$d){$active=in_array($d['decision'],['activate','verify']);$user->update(['is_active'=>$active]);if($user->role==='sertifikasi'){$state=match($d['decision']){'verify'=>'active','reject'=>'rejected','activate'=>'active',default=>'disabled'};DB::table('certification_bodies')->where('user_id',$user->id)->update(['status'=>$state,'verified_at'=>$state==='active'?now():($d['decision']==='deactivate'?DB::table('certification_bodies')->where('user_id',$user->id)->value('verified_at'):null),'updated_at'=>now()]);}$this->audit($r,'account.'.$d['decision'],'users',$user->id,['reason'=>$d['reason']]);});return $this->ok('Status akun diperbarui.');}
  public function catalog(Request $r,string $type){$this->role($r,'admin');abort_unless(in_array($type,['skills','jobs_taxonomy','job_vacancies','trainings']),404);
-  abort_if($type==='skills' && !$r->integer('id'),403,'Skill baru berasal dari pengajuan lembaga.');
+  abort_if($type==='skills' && !$r->integer('id'),403,'Tambahkan skill melalui persyaratan lowongan atau tinjauan pengajuan lembaga.');
   abort_if($type==='trainings',403,'Perubahan pelatihan melalui pengajuan lembaga dan tinjauan Admin.');
   $data=$r->validate(match($type){
    'skills'=>['name'=>['required','string','max:150',Rule::unique('skills','name')->ignore($r->integer('id'))],'category'=>'required|string|max:150','aliases'=>'nullable|string|max:1000','is_active'=>'required|boolean'],
@@ -162,6 +162,49 @@ class ActionController {
   $this->audit($r,'skill.delete','skills',$id,['name'=>$name]);
   return redirect('/admin/skill')->with('success','Keterampilan "'.$name.'" berhasil dihapus karena belum digunakan oleh data lain.');
  }
+ public function createVacancySkill(Request $request, int $id, \App\Services\CatalogSkillService $catalog)
+ {
+     $this->role($request, 'admin');
+     $data = $request->validate([
+         'new_skill_name' => 'required|string|max:150',
+         'new_skill_category' => 'required|string|max:150',
+         'new_skill_level' => 'required|integer|between:1,4',
+         'new_skill_importance' => 'required|in:required,preferred',
+     ]);
+
+     DB::transaction(function () use ($request, $id, $catalog, $data): void {
+         JobVacancy::query()->lockForUpdate()->findOrFail($id);
+         $config = WeightConfiguration::where('is_active', true)->latest('version')->firstOrFail();
+         $skillId = $catalog->resolveName($data['new_skill_name'], $data['new_skill_category']);
+         $skill = Skill::query()->lockForUpdate()->findOrFail($skillId);
+         if (!$skill->is_active) {
+             throw \Illuminate\Validation\ValidationException::withMessages([
+                 'new_skill_name' => 'Skill ini sudah ada dan sedang nonaktif. Aktifkan melalui katalog atau pilih skill lain.',
+             ]);
+         }
+
+         $created = DB::table('job_required_skills')->insertOrIgnore([
+             'job_vacancy_id' => $id,
+             'skill_id' => $skillId,
+             'minimum_level' => $data['new_skill_level'],
+             'importance' => $data['new_skill_importance'],
+             'weight' => $data['new_skill_importance'] === 'required' ? $config->required_weight : $config->preferred_weight,
+             'is_override' => false,
+             'created_at' => now(),
+             'updated_at' => now(),
+         ]);
+         if (!$created) {
+             throw \Illuminate\Validation\ValidationException::withMessages([
+                 'new_skill_name' => 'Skill ini sudah menjadi persyaratan. Ubah pengaturannya di daftar keterampilan tersimpan.',
+             ]);
+         }
+
+         $this->audit($request, 'vacancy.requirement', 'job_vacancies', $id, ['skill_id' => $skillId, 'name' => $skill->name]);
+     }, 3);
+
+     return redirect('/admin/lowongan/persyaratan?id='.$id)->with('success', 'Skill aktif di katalog dan sudah menjadi persyaratan lowongan.');
+ }
+
  public function attachJobSkill(Request $r,int $id){$this->role($r,'admin');$job=JobVacancy::findOrFail($id);$d=$r->validate(['skill_id'=>'required|exists:skills,id','minimum_level'=>'required|integer|between:1,4','importance'=>'required|in:required,preferred','weight'=>'required|integer|between:1,5','reason'=>'nullable|string|max:500']);$cfg=WeightConfiguration::where('is_active',true)->firstOrFail();$default=$d['importance']==='required'?$cfg->required_weight:$cfg->preferred_weight;
   if((int)$d['weight']!==(int)$default&&!filled($d['reason']??null))return back()->withErrors(['reason'=>'Perubahan bobot default memerlukan alasan.']);
   DB::table('job_required_skills')->updateOrInsert(['job_vacancy_id'=>$job->id,'skill_id'=>$d['skill_id']],['minimum_level'=>$d['minimum_level'],'importance'=>$d['importance'],'weight'=>$d['weight'],'is_override'=>(int)$d['weight']!==(int)$default,'override_reason'=>$d['reason']??null,'created_at'=>now(),'updated_at'=>now()]);$this->audit($r,'vacancy.requirement','job_vacancies',$id,$d);if($r->boolean('continue'))return redirect('/admin/lowongan/detail?id='.$id)->with('success','Persyaratan tersimpan. Tinjau sebelum publikasi.');return $this->ok();}

@@ -4,7 +4,10 @@ $record=request('id')?\Illuminate\Support\Facades\DB::table($kind)->where('id',r
 $base=match($kind){'skills'=>'skill','jobs_taxonomy'=>'jabatan','job_vacancies'=>'lowongan',default=>'pelatihan'};
 @endphp
 <section class="card narrow">
-@if(in_array($kind,['job_vacancies','trainings']))<div class="note">Data baru disimpan sebagai <b>Draft</b>. Tambahkan skill terlebih dahulu sebelum menerbitkan.</div>
+@if($kind==='job_vacancies')
+<div class="note">Lowongan baru disimpan sebagai <b>Draft</b>. Pilih <b>Simpan &amp; Lanjutkan</b> untuk memilih skill dari katalog atau menambahkan skill baru sebagai persyaratan.</div>
+@elseif($kind==='trainings')
+<div class="note">Data baru disimpan sebagai <b>Draft</b>. Tambahkan skill terlebih dahulu sebelum menerbitkan.</div>
 @endif
 <form class="editor-grid" data-dirty-guard method="post" action="{{ route('catalog.save',$kind) }}">
 @csrf

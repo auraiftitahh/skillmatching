@@ -2,6 +2,7 @@
 namespace Database\Seeders;
 use App\Models\{User,JobVacancy,WeightConfiguration};
 use App\Services\MatchingService;
+use App\Support\Publication;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\{DB,Storage};
 
@@ -16,6 +17,44 @@ class ScenarioSeeder extends Seeder
  private function user(string $email,string $name,string $role='pelamar',bool $verified=true,bool $active=true):User {
   return User::firstOrCreate(['email'=>$email],['name'=>$name,'password'=>env('DEMO_PASSWORD'),'role'=>$role,'email_verified_at'=>$verified?now():null,'is_active'=>$active,'employment_status'=>'laid_off','domicile'=>'Surabaya']);
  }
+    /** Add demo training for active catalog skills without published training. */
+    private function seedMissingSkillTrainings(?int $logisticsBodyId, ?int $digitalBodyId): void
+    {
+        $publishedTrainingIds = Publication::trainings()->select('trainings.id');
+        $uncoveredSkills = DB::table('skills')->where('is_active', true)
+            ->whereNotIn('id', DB::table('training_skills')->select('skill_id')->whereIn('training_id', $publishedTrainingIds))
+            ->orderBy('id')->get(['id', 'name', 'category']);
+        $eligibleBodies = array_map('intval', Publication::bodyIds()->pluck('cb.id')->all());
+        $profiles = [
+            'Logistik' => ['offline', 12, 4, 175000, $logisticsBodyId],
+            'Administrasi' => ['online', 8, 2, 0, null],
+            'Produksi' => ['offline', 16, 4, 225000, $logisticsBodyId],
+            'Digital' => ['online', 12, 3, 150000, $digitalBodyId],
+            'Layanan' => ['hybrid', 8, 2, 75000, null],
+        ];
+
+        foreach ($uncoveredSkills as $skill) {
+            [$mode, $hours, $weeklyHours, $cost, $bodyId] = $profiles[$skill->category] ?? ['online', 8, 2, 0, null];
+            $bodyId = in_array($bodyId, $eligibleBodies, true) ? $bodyId : null;
+            $trainingId = $this->row('trainings', [
+                'title' => 'Praktik '.$skill->name.' (Demo)',
+                'source' => 'DEMO CAKUPAN SKILL',
+            ], [
+                'provider' => 'Penyedia Demo Kompetensi',
+                'description' => 'Pelatihan simulasi untuk melatih '.$skill->name.' melalui contoh kasus dan praktik terarah hingga level Menengah. Data sintetis.',
+                'mode' => $mode,
+                'duration_hours' => $hours,
+                'weekly_hours' => $weeklyHours,
+                'cost' => $cost,
+                'source_url' => 'https://example.com/pelatihan-demo',
+                'fetched_at' => now()->toDateString(),
+                'status' => 'active',
+                'certification_body_id' => $bodyId,
+            ]);
+            $this->row('training_skills', ['training_id' => $trainingId, 'skill_id' => $skill->id], ['target_level' => 2]);
+        }
+    }
+
  public function run():void {
   if(!filter_var(env('DEMO_SEED',false),FILTER_VALIDATE_BOOLEAN))throw new \RuntimeException('ScenarioSeeder memerlukan DEMO_SEED=true secara eksplisit.');
   if(app()->environment('production')&&!filter_var(env('ALLOW_DEMO_IN_PRODUCTION',false),FILTER_VALIDATE_BOOLEAN))throw new \RuntimeException('Data sintetis produksi dinonaktifkan. Gunakan staging atau ALLOW_DEMO_IN_PRODUCTION=true secara eksplisit.');
@@ -98,6 +137,7 @@ class ScenarioSeeder extends Seeder
     $id=$this->row('trainings',['title'=>$title],['provider'=>'Penyedia Demo Kompetensi','description'=>'DATA SINTETIS / DEMO. Bukan penawaran resmi.','mode'=>$mode,'duration_hours'=>8+$i*2,'weekly_hours'=>2+$i%5,'cost'=>$cost,'source'=>'DEMO','source_url'=>'https://example.com/pelatihan-demo','fetched_at'=>now()->toDateString(),'status'=>$status,'certification_body_id'=>$bodyId]);
     $trainings[$title]=$id;$this->row('training_skills',['training_id'=>$id,'skill_id'=>$sid[$skill]],['target_level'=>$level]);
    }
+   $this->seedMissingSkillTrainings((int)$logistik, (int)$bodyIds['active']);
    DB::table('training_prerequisites')->insertOrIgnore(['training_id'=>$trainings['Spreadsheet Lanjutan'],'prerequisite_id'=>$trainings['Spreadsheet untuk Logistik']]);
    $states=['planned','in_progress','waiting_confirmation','completed','rejected'];
    $learners=[$new,$partial,$raka,$expert,$digital];

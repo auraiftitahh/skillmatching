@@ -37,15 +37,137 @@ class InstitutionRefactorTest extends TestCase
         $this->actingAs($institution)->post(route('submissions.save'),$this->payload())->assertRedirect();
         $id=DB::table('training_submissions')->value('id');
         $this->assertDatabaseCount('skills',0);$this->assertDatabaseCount('trainings',0);
-        $this->actingAs($admin)->post(route('submissions.review',$id),['decision'=>'approved','review_note'=>'Isi dan capaian telah ditinjau.'])->assertRedirect();
+        $this->actingAs($admin)->post(route('submissions.review',$id),['decision'=>'approved','review_note'=>'Isi pelatihan telah ditinjau.'])->assertStatus(422);
+        $this->post(route('submissions.skills.review',[$id,0]),['skill_decision'=>'approved','skill_note'=>'Usulan skill telah ditinjau.'])->assertRedirect();
+        $this->assertDatabaseCount('skills',1);
+        $this->assertDatabaseCount('trainings',0);
+        $this->post(route('submissions.review',$id),['decision'=>'approved','review_note'=>'Isi pelatihan telah ditinjau.'])->assertRedirect();
         $this->assertDatabaseCount('skills',1);$this->assertDatabaseHas('trainings',['certification_body_id'=>$body,'status'=>'active']);
         $payload=$this->payload();$payload['title']='K3 untuk Shift Kedua';$payload['outcomes'][0]['new_name']='  praktik   k3 gudang  ';
         $this->actingAs($institution)->post(route('submissions.save'),$payload)->assertRedirect();
         $second=DB::table('training_submissions')->max('id');
-        $this->actingAs($admin)->post(route('submissions.review',$second),['decision'=>'approved','review_note'=>'Pemetaan kompetensi sama.'])->assertRedirect();
+        $this->actingAs($admin)->post(route('submissions.skills.review',[$second,0]),['skill_decision'=>'approved','skill_note'=>'Pemetaan kompetensi sama.'])->assertRedirect();
+        $this->post(route('submissions.review',$second),['decision'=>'approved','review_note'=>'Pelatihan kedua disetujui.'])->assertRedirect();
         $this->assertDatabaseCount('skills',1);$this->assertDatabaseCount('trainings',2);
         $this->post(route('submissions.review',$second),['decision'=>'approved','review_note'=>'Tidak boleh ditinjau ulang.'])->assertStatus(422);
     }
+    public function test_related_vacancy_waits_for_skill_approval_and_can_be_revised_independently(): void
+    {
+        [$institution]=$this->institution();
+        [$other]=$this->institution('other');
+        $admin=$this->user('admin');
+        $this->config();
+        $skillId=DB::table('skills')->insertGetId(['name'=>'Prosedur Gudang','category'=>'Logistik','is_active'=>true]);
+        $payload=$this->payload();
+        $payload['outcomes']=[3=>$payload['outcomes'][0]];
+        $vacancy=[
+            'title'=>'Operator Gudang Uji','company'=>'Perusahaan Uji','location'=>'Bogor',
+            'employment_type'=>'Kontrak','description'=>'Persyaratan untuk gudang.',
+            'source_url'=>'https://example.com/jobs','expires_at'=>today()->addMonth()->toDateString(),
+        ];
+        $requirements=[3=>['selected'=>1,'minimum_level'=>2,'importance'=>'required']];
+        $approved=['decision'=>'approved','review_note'=>'Data lowongan sudah diperiksa.'];
+
+        $this->actingAs($institution)->get('/sertifikasi/pengajuan/form')
+            ->assertOk()->assertSee('3. Lowongan terkait')->assertSee('4. Simpan atau kirim');
+        $this->post(route('submissions.save'),[...$payload,'with_vacancy'=>1,'vacancy'=>[...$vacancy,'requirements'=>[2=>$requirements[3]]]])
+            ->assertSessionHasErrors('vacancy.requirements');
+        $this->post(route('submissions.save'),[...$payload,'with_vacancy'=>1,'vacancy'=>[...$vacancy,'requirements'=>$requirements]])
+            ->assertRedirect();
+        $id=DB::table('training_submissions')->value('id');
+        $review=route('submissions.vacancy.review',$id);
+        $resubmit=route('submissions.vacancy.resubmit',$id);
+        $this->post($review,$approved)->assertForbidden();
+        $this->actingAs($admin)->post($review,$approved)->assertStatus(422);
+        $this->assertDatabaseCount('job_vacancies',0);
+
+        $this->get('/admin/pengajuan/detail?id='.$id)->assertOk()->assertDontSee('Simpan Tinjauan Pelatihan');
+        $this->post(route('submissions.skills.review',[$id,0]),['skill_decision'=>'approved','skill_note'=>'Gunakan padanan yang sudah ada.','mapping'=>$skillId])->assertRedirect();
+        $this->post($review,$approved)->assertStatus(422);
+        $this->get('/admin/pengajuan/detail?id='.$id)->assertOk()->assertSee('Simpan Tinjauan Pelatihan')->assertDontSee('Simpan Tinjauan Lowongan');
+        $this->post(route('submissions.review',$id),$approved)->assertRedirect();
+        $this->assertDatabaseCount('skills',1);
+        $this->assertDatabaseCount('job_vacancies',0);
+        $this->get('/admin/pengajuan?status=vacancy_pending')->assertOk()->assertSee($vacancy['title']);
+        $this->get('/admin/pengajuan/detail?id='.$id)->assertOk()->assertSee('Simpan Tinjauan Lowongan');
+        $this->post($review,[...$approved,'decision'=>'revision'])->assertRedirect();
+        $this->assertDatabaseHas('training_submissions',['id'=>$id,'status'=>'approved']);
+        $this->assertDatabaseCount('job_vacancies',0);
+
+        $this->actingAs($institution)->get('/sertifikasi/pelatihan')->assertOk()
+            ->assertSee('class="btn outline" href="/sertifikasi/pelatihan/peserta?training_id=',false)
+            ->assertSee('class="btn primary" href="/sertifikasi/pengajuan/form?training_id=',false);
+
+        $vacancy['requirements']=[0=>$requirements[3]];
+        $this->actingAs($other)->post($resubmit,['vacancy'=>$vacancy])->assertNotFound();
+        $this->actingAs($institution)->get('/sertifikasi/pengajuan/detail?id='.$id)->assertOk()->assertSee('Kirim Ulang Lowongan');
+        $this->post($resubmit,['vacancy'=>$vacancy])->assertRedirect();
+        $this->actingAs($admin)->post($review,$approved)->assertRedirect();
+        $job=\App\Support\Publication::jobs()->firstOrFail();
+        $this->assertSame($vacancy['title'],$job->title);
+        $this->assertDatabaseHas('job_required_skills',['job_vacancy_id'=>$job->id,'skill_id'=>$skillId,'minimum_level'=>2,'importance'=>'required']);
+        $this->post($review,$approved)->assertStatus(422);
+        $this->assertDatabaseCount('job_vacancies',1);
+    }
+
+    public function test_skill_proposals_are_reviewed_individually_and_rejected_skills_return_for_revision(): void
+    {
+        [$institution] = $this->institution();
+        $admin = $this->user('admin');
+        $payload = $this->payload();
+        $payload['outcomes'][] = [...$payload['outcomes'][0], 'new_name' => 'Usulan kedua'];
+        $this->actingAs($institution)->post(route('submissions.save'), $payload)->assertRedirect();
+        $id = DB::table('training_submissions')->value('id');
+        $first = route('submissions.skills.review', [$id,0]);
+        $second = route('submissions.skills.review', [$id,1]);
+        $approved = ['skill_decision'=>'approved','skill_note'=>'Usulan pertama sesuai.'];
+
+        $this->post($first, $approved)->assertForbidden();
+        $this->actingAs($admin)->post($first, $approved)->assertRedirect();
+        $this->post($first, $approved)->assertStatus(422);
+        $this->post(route('submissions.review',$id), ['decision'=>'approved','review_note'=>'Pelatihan siap.'])->assertStatus(422);
+        $this->post($second, ['skill_decision'=>'rejected','skill_note'=>'Perjelas kompetensi usulan kedua.'])->assertRedirect();
+        $this->assertDatabaseHas('training_submissions', ['id'=>$id,'status'=>'revision']);
+        $this->assertDatabaseCount('skills', 1);
+        $this->assertDatabaseCount('trainings', 0);
+
+        $payload['outcomes'][1]['description'] = 'Menjelaskan kompetensi secara lebih spesifik.';
+        $this->actingAs($institution)->get('/sertifikasi/pengajuan/detail?id='.$id)->assertOk()->assertSee('Perjelas kompetensi usulan kedua.');
+        $this->post(route('submissions.save'), ['id'=>$id, ...$payload])->assertRedirect();
+        $this->actingAs($admin)->post($first, $approved)->assertStatus(422);
+        $this->post($second, ['skill_decision'=>'approved','skill_note'=>'Usulan kedua kini jelas.'])->assertRedirect();
+        $this->post(route('submissions.review',$id), ['decision'=>'approved','review_note'=>'Pelatihan siap diterbitkan.'])->assertRedirect();
+        $this->assertDatabaseCount('training_skills', 2);
+    }
+
+    public function test_submission_rejects_duplicate_catalog_skills_and_accepts_lower_vacancy_minimum(): void
+    {
+        [$institution] = $this->institution();
+        $skillId = DB::table('skills')->insertGetId(['name'=>'Pengarsipan','category'=>'Administrasi','is_active'=>true]);
+        $payload = $this->payload();
+        $outcome = ['skill_id'=>$skillId,'target_level'=>4];
+        $vacancy = [
+            'title'=>'Petugas Arsip','company'=>'Perusahaan Uji','location'=>'Bogor',
+            'employment_type'=>'Kontrak','description'=>'Menata dokumen perusahaan.',
+            'source_url'=>'https://example.com/jobs','expires_at'=>today()->addMonth()->toDateString(),
+            'requirements'=>[['selected'=>1,'minimum_level'=>3,'importance'=>'required']],
+        ];
+
+        $this->actingAs($institution)->post(route('submissions.save'), [...$payload,'outcomes'=>[$outcome,$outcome]])
+            ->assertSessionHasErrors('outcomes.1.skill_id');
+
+        $this->post(route('submissions.save'), [
+            ...$payload,'with_vacancy'=>1,'outcomes'=>[[...$outcome,'target_level'=>2]],'vacancy'=>$vacancy,
+        ])->assertSessionHasErrors('vacancy.requirements');
+        $this->assertDatabaseCount('training_submissions', 0);
+
+        $this->post(route('submissions.save'), [...$payload,'with_vacancy'=>1,'outcomes'=>[$outcome],'vacancy'=>$vacancy])
+            ->assertRedirect()->assertSessionHasNoErrors();
+        $saved = json_decode(DB::table('training_submissions')->value('payload'), true);
+        $this->assertEquals(4, $saved['outcomes'][0]['target_level']);
+        $this->assertSame(3, $saved['vacancy']['requirements'][0]['minimum_level']);
+    }
+
     public function test_pending_body_and_other_institution_cannot_edit_submission(): void
     {
         [$pending]=$this->institution('pending','pending');
@@ -55,6 +177,36 @@ class InstitutionRefactorTest extends TestCase
         $id=DB::table('training_submissions')->value('id');
         $this->actingAs($other)->post(route('submissions.save'),['id'=>$id,...$this->payload()])->assertNotFound();
     }
+    public function test_admin_can_create_and_attach_an_active_skill_from_vacancy_requirements(): void
+    {
+        $this->config();
+        $vacancy = ['company'=>'Perusahaan','status'=>'draft','fetched_at'=>today(),'expires_at'=>today()->addMonth()];
+        $job = DB::table('job_vacancies')->insertGetId([...$vacancy,'title'=>'Petugas Arsip']);
+        $otherJob = DB::table('job_vacancies')->insertGetId([...$vacancy,'title'=>'Staf Arsip']);
+        $this->actingAs($this->user('pelamar'))->post(route('vacancy.skill.create', $job), [])->assertForbidden();
+        $this->actingAs($this->user('admin'))->get('/admin/lowongan/persyaratan?id='.$job)
+            ->assertOk()->assertSee('Simpan Skill sebagai Persyaratan');
+
+        $data = [
+            'new_skill_name'=>'Pemeriksaan Arsip', 'new_skill_category'=>'Administrasi',
+            'new_skill_level'=>3, 'new_skill_importance'=>'preferred',
+        ];
+        $this->post(route('vacancy.skill.create', $job), $data)->assertRedirect()->assertSessionHasNoErrors();
+        $skillId = DB::table('skills')->where('name','Pemeriksaan Arsip')->value('id');
+        $this->assertDatabaseHas('skills', ['id'=>$skillId,'is_active'=>true]);
+        $this->assertDatabaseHas('job_required_skills', [
+            'job_vacancy_id'=>$job,'skill_id'=>$skillId,'minimum_level'=>3,'importance'=>'preferred','weight'=>1,
+        ]);
+        $this->post(route('vacancy.skill.create', $otherJob), [
+            ...$data,'new_skill_name'=>'pemeriksaan   arsip',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertDatabaseCount('skills', 1);
+        $this->assertDatabaseHas('job_required_skills', ['job_vacancy_id'=>$otherJob,'skill_id'=>$skillId]);
+        $this->post(route('vacancy.skill.create', $job), $data)->assertSessionHasErrors('new_skill_name');
+        $this->assertDatabaseCount('job_required_skills', 2);
+        $this->assertDatabaseHas('job_vacancies', ['id'=>$job,'status'=>'draft']);
+    }
+
     public function test_admin_cannot_create_new_skill_or_bypass_training_review(): void
     {
         $this->actingAs($this->user('admin'))->post(route('catalog.save','skills'),['name'=>'Tidak boleh','category'=>'Umum','is_active'=>1])->assertForbidden();
@@ -102,7 +254,8 @@ class InstitutionRefactorTest extends TestCase
         [$institution,$body]=$this->institution();$admin=$this->user('admin');$pelamar=$this->user('pelamar');
         $this->actingAs($institution)->post(route('submissions.save'),$this->payload());
         $first=DB::table('training_submissions')->value('id');
-        $this->actingAs($admin)->post(route('submissions.review',$first),['decision'=>'approved','review_note'=>'Capaian awal disetujui.']);
+        $this->actingAs($admin)->post(route('submissions.skills.review',[$first,0]),['skill_decision'=>'approved','skill_note'=>'Capaian awal disetujui.'])->assertRedirect();
+        $this->post(route('submissions.review',$first),['decision'=>'approved','review_note'=>'Pelatihan awal disetujui.'])->assertRedirect();
         $training=DB::table('trainings')->first();$skill=DB::table('training_skills')->value('skill_id');
         $enrollment=DB::table('training_enrollments')->insertGetId(['user_id'=>$pelamar->id,'training_id'=>$training->id,'status'=>'waiting_confirmation','created_at'=>now(),'updated_at'=>now()]);
         $revision=$this->payload();$revision['training_id']=$training->id;$revision['outcomes']=[['skill_id'=>$skill,'target_level'=>4]];

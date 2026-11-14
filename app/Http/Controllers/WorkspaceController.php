@@ -251,8 +251,12 @@ class WorkspaceController {
     if(in_array($role,['admin','sertifikasi']) && str_starts_with($page,'pengajuan')){
       $query=DB::table('training_submissions as s')->join('certification_bodies as b','b.id','=','s.certification_body_id')->select('s.*','b.name as body_name');
       if($role==='sertifikasi')$query->where('s.certification_body_id',$body->id);
-      if($r->filled('status') && $page==='pengajuan')$query->where('s.status',$r->query('status'));
+      if($role==='admin')$query->where('s.status','!=','draft');
+      if($r->filled('status') && $page==='pengajuan' && $r->query('status')!=='vacancy_pending')$query->where('s.status',$r->query('status'));
       $data['submissions']=$query->latest('s.updated_at')->get();
+      if($page==='pengajuan' && $r->query('status')==='vacancy_pending'){
+        $data['submissions']=$data['submissions']->filter(fn($submission)=>$submission->status==='approved' && (json_decode($submission->payload,true)['vacancy']['status']??null)==='pending');
+      }
       $data['submission']=$r->integer('id')?$data['submissions']->firstWhere('id',$r->integer('id')):null;
       if($r->integer('id') && !$data['submission'])abort(404);
       if($page==='pengajuan/detail' && !$data['submission'])abort(404);
